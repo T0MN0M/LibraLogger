@@ -1,0 +1,288 @@
+/* ===== Font (AstroSpace, from Styles/a-astro-space-font.zip) ===== */
+@font-face {
+  font-family: "AstroSpace";
+  src: url("../../Styles/fonts/AstroSpace-0Wl3o.otf") format("opentype"),
+       url("../../Styles/fonts/AstroSpace-eZ2Bg.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* ===== Theme (palette from Styles/Colors.png) ===== */
+:root {
+  --utd-orange: #e87500;
+  --utd-orange-dark: #c95100;
+  --utd-green: #154734;
+  --utd-mint: #5fe0b7;
+
+  --bg: #000;
+  --card: rgba(21, 71, 52, 0.35);   /* UTD green, translucent */
+  --border: rgba(95, 224, 183, 0.35); /* mint, translucent */
+  --text: #eaf4f0;
+  --muted: #9dbbb0;
+  --error: #ff8a65;
+
+  --font-display: "AstroSpace", "Segoe UI", sans-serif;
+  --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* ===== Star background ===== */
+#stars {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* ===== Brand name (top-left, outside the card) ===== */
+.brand {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.brand span { color: var(--utd-orange); }
+
+/* ===== Card ===== */
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 2rem 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0px;
+  backdrop-filter: blur(6px);
+  text-align: center;
+}
+
+.logo-placeholder {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1rem;
+  border: 2px dashed var(--utd-mint);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--utd-mint);
+}
+
+.logo-image {
+  object-fit: contain;
+  border: 4px solid #154734;
+  border-radius: 50%;
+  background: transparent;
+  display: block;
+  padding: 0;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: normal;
+  font-size: clamp(1.3rem, 5vw, 1.7rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--utd-orange);
+}
+
+.title-rule {
+  border: none;
+  height: 2px;
+  margin: 0.6rem 0 1.4rem;
+  background: linear-gradient(90deg, transparent, var(--utd-orange), transparent);
+}
+
+/* ===== Form ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.row input { flex: 1; min-width: 0; }
+
+input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input::placeholder { color: var(--muted); }
+
+input:focus {
+  border-color: var(--utd-mint);
+  box-shadow: 0 0 0 3px rgba(95, 224, 183, 0.2);
+}
+
+input.invalid { border-color: var(--error); }
+
+/* Password + eye toggle */
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 2.8rem; }
+
+.eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.eye-btn:hover,
+.eye-btn.active { color: var(--utd-mint); }
+
+/* Date of birth: MM DD YYYY */
+.dob {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  border: none;
+}
+
+.dob legend {
+  width: 100%;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.dob input {
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  border-radius: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+}
+
+.dob input:focus {
+  box-shadow: none;
+  border-bottom-color: var(--utd-mint);
+}
+
+.dob input.invalid { border-bottom-color: var(--error); }
+
+#dobMonth, #dobDay { width: 4.5rem; }
+#dobYear { width: 6rem; }
+
+.form-message {
+  min-height: 1.2em;
+  font-size: 0.85rem;
+  color: var(--error);
+}
+
+.form-message.success { color: var(--utd-mint); }
+
+/* ===== Buttons ===== */
+.btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: var(--utd-orange);
+  border: none;
+}
+
+.btn-primary:hover { background: var(--utd-orange-dark); }
+
+.btn-google {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--utd-mint);
+}
+
+.btn-google:hover { background: rgba(95, 224, 183, 0.12); }
+
+/* ===== OR divider ===== */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.1rem 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.switch-link {
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.switch-link a { color: var(--utd-mint); }
+
+/* ===== Small screens: condense dead space ===== */
+@media (max-width: 480px) {
+  body { padding: 3.5rem 0.75rem 0.75rem; } /* room for the brand name */
+  .brand { top: 1rem; left: 1rem; font-size: 1.15rem; }
+  .card { padding: 1.4rem 1.1rem 1.1rem; }
+  .logo-placeholder { width: 64px; height: 64px; margin-bottom: 0.6rem; }
+  .title-rule { margin: 0.4rem 0 1rem; }
+  form { gap: 0.6rem; }
+  .row { flex-direction: column; gap: 0.6rem; }
+  .divider { margin: 0.8rem 0; }
+}

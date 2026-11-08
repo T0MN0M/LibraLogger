@@ -10,7 +10,7 @@
 :root {
   --font-display: "AstroSpace", "Segoe UI", sans-serif;
   --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  /* Palette from Colors.png (UT Dallas brand colors) */
+  /* Palette from Styles/Colors.png (UT Dallas brand colors) */
   --utd-orange: #e87500;
   --utd-orange-dark: #c95100;
   --utd-green: #154734;
