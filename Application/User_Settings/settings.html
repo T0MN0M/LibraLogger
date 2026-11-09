@@ -4,89 +4,136 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings | Libra Logger</title>
+    <link rel="stylesheet" href="../shared/theme.css" />
     <link rel="stylesheet" href="settings.css" />
+    <script src="../shared/stars.js" defer></script>
+    <script src="../shared/api.js" defer></script>
+    <script src="../shared/app-shell.js" defer></script>
     <script src="settings.js" defer></script>
   </head>
   <body>
     <!-- Black background with moving stars -->
     <canvas id="stars"></canvas>
 
-    <div class="brand">Libra <span>Logger</span></div>
+    <!-- ===== Top bar: Logout (left) · Brand (center) · Settings (right, current page) ===== -->
+    <header class="topbar">
+      <a class="topbar-btn logout" href="../Login_Page/login.html" data-logout title="Log out">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span class="label">Logout</span>
+      </a>
+      <a class="brand" href="../Dashboard/dashboard.html" title="Dashboard">
+        <img src="../../Styles/LibraLoggerLogo.png" alt="" />
+        Libra <span>Logger</span>
+      </a>
+      <a class="topbar-btn settings" href="../User_Settings/settings.html" aria-current="page" title="Settings">
+        <span class="label">Settings</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      </a>
+    </header>
 
-    <main class="card">
-      <!-- Header: back arrow, title, gear -->
-      <header class="settings-header">
-        <a class="back-btn" href="../Dashboard/dashboard.html" aria-label="Back to dashboard" title="Back">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <div class="settings-main">
+      <main class="card settings-card">
+        <!-- Header: back arrow, title, gear -->
+        <header class="settings-header">
+          <a class="back-btn" href="../Dashboard/dashboard.html" aria-label="Back to dashboard" title="Back">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>Back</span>
+          </a>
+          <h1>Settings</h1>
+          <svg class="gear" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" />
           </svg>
-          <span>Back</span>
-        </a>
-        <h1>Settings</h1>
-        <svg class="gear" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
-          <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" />
-          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" />
-        </svg>
-      </header>
-      <hr class="title-rule" />
+        </header>
+        <hr class="title-rule" />
 
-      <!-- Profile picture -->
-      <section class="pfp-section">
-        <div class="pfp" aria-label="Profile picture">
-          <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6" />
-            <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-          </svg>
+        <!-- Profile picture (Profile.change_PFP) -->
+        <section class="pfp-section">
+          <div class="pfp" id="pfp" aria-label="Profile picture">
+            <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </div>
+          <button type="button" class="pfp-change" id="pfpChange">change PFP</button>
+          <input type="file" id="pfpInput" accept="image/*" hidden />
+        </section>
+
+        <!-- Account fields -->
+        <h2 class="section-title">Account</h2>
+        <dl class="fields">
+          <div class="field" data-field="user_name">
+            <dt>Name</dt>
+            <dd id="fieldName">&ndash;</dd>
+            <button type="button" class="edit-btn" data-edit="user_name" aria-label="Change name" title="Change name">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            </button>
+          </div>
+          <div class="field">
+            <dt>Email</dt>
+            <dd id="fieldEmail">&ndash;</dd>
+            <button type="button" class="edit-btn" data-action="Changing your email (needs a verification email)" aria-label="Change email" title="Change email">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            </button>
+          </div>
+          <div class="field">
+            <dt>Password</dt>
+            <dd class="masked">********</dd>
+            <button type="button" class="edit-btn" data-action="Changing your password (needs a reset email)" aria-label="Change password" title="Change password">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            </button>
+          </div>
+          <div class="field" data-field="nickname">
+            <dt>Nickname</dt>
+            <dd id="fieldNickname" class="empty">[add nickname]</dd>
+            <button type="button" class="edit-btn" data-edit="nickname" aria-label="Change nickname" title="Change nickname">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            </button>
+          </div>
+          <div class="field" data-field="birthday">
+            <dt>Birthday</dt>
+            <dd id="fieldBirthday" class="empty">[add birthday]</dd>
+            <button type="button" class="edit-btn" data-edit="birthday" aria-label="Change birthday" title="Change birthday">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            </button>
+          </div>
+        </dl>
+
+        <!-- Profile card look (Profile.edit_Profile_Card) -->
+        <h2 class="section-title">Profile Card</h2>
+        <div class="color-row">
+          <label class="color-pick">
+            <input type="color" id="profileColor" value="#5fe0b7" />
+            <span>Icon color</span>
+          </label>
+          <label class="color-pick">
+            <input type="color" id="profileBorder" value="#e87500" />
+            <span>Border color</span>
+          </label>
         </div>
-        <button type="button" class="pfp-change" data-action="Change profile picture">change PFP</button>
-      </section>
 
-      <!-- Account fields -->
-      <dl class="fields">
-        <div class="field">
-          <dt>Name</dt>
-          <dd>Test User 01</dd>
-          <button type="button" class="edit-btn" data-action="Change name" aria-label="Change name" title="Change name">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
-          </button>
+        <!-- Options -->
+        <h2 class="section-title">Options</h2>
+        <div class="options">
+          <button type="button" id="toggle2fa" class="btn btn-2fa">Enable 2FA</button>
+          <button type="button" id="resetData" class="btn btn-outline">Reset Data</button>
+          <button type="button" id="deleteAccount" class="btn btn-danger">! Delete Account !</button>
         </div>
-        <div class="field">
-          <dt>Email</dt>
-          <dd>example@gmail.com</dd>
-          <button type="button" class="edit-btn" data-action="Change email" aria-label="Change email" title="Change email">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
-          </button>
+
+        <p id="statusMessage" class="status-message" role="status"></p>
+
+        <!-- App info (Miscellaneous.find_App_Version / find_Updates / go_To_Repository) -->
+        <div class="app-info">
+          <span>Version <strong id="appVersion">&ndash;</strong></span>
+          <button type="button" id="checkUpdates" class="link-btn">Check for updates</button>
+          <a href="https://github.com/T0MN0M/LibraBudget" target="_blank" rel="noopener">Repository</a>
         </div>
-        <div class="field">
-          <dt>Password</dt>
-          <dd class="masked">********</dd>
-          <button type="button" class="edit-btn" data-action="Change password" aria-label="Change password" title="Change password">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
-          </button>
-        </div>
-        <div class="field">
-          <dt>Nickname</dt>
-          <dd class="empty">[add nickname]</dd>
-          <button type="button" class="edit-btn" data-action="Add nickname" aria-label="Add nickname" title="Add nickname">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
-          </button>
-        </div>
-      </dl>
 
-      <!-- Options -->
-      <h2 class="section-title">Options</h2>
-      <div class="options">
-        <button type="button" id="enable2fa" class="btn btn-2fa">Enable 2FA</button>
-        <button type="button" class="btn btn-danger" data-action="Delete account">! Delete Account !</button>
-      </div>
-
-      <p id="statusMessage" class="status-message" role="status"></p>
-
-      <footer class="card-footer"><span>Libra Logger</span></footer>
-    </main>
-
-    <!-- Libra logo, bottom-right corner -->
-    <img class="corner-logo" src="../../Styles/LibraLoggerLogo.png" alt="Libra Logger logo" />
+        <footer class="card-footer"><span>Libra Logger</span></footer>
+      </main>
+    </div>
 
     <!-- 2FA confirmation popup -->
     <div id="twofaModal" class="modal-backdrop" hidden>

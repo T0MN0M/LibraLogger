@@ -1,0 +1,69 @@
+.about-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.mission { grid-row: span 2; }
+
+.about-logo {
+  display: block;
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 1rem;
+  border: 3px solid var(--utd-green);
+  border-radius: 50%;
+}
+
+.mission p { color: var(--muted); }
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-left: 1.2rem;
+}
+
+.feature-list strong { color: var(--utd-orange); }
+
+.muted { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.6rem; }
+
+.team {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem 1rem;
+  list-style: none;
+}
+
+.team li::before {
+  content: "\2605";
+  margin-right: 0.45rem;
+  color: var(--utd-mint);
+}
+
+.facts { margin-bottom: 1rem; }
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+}
+
+.facts dt { color: var(--muted); }
+
+.credits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  .team { grid-template-columns: 1fr; }
+}

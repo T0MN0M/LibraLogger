@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About | Libra Logger</title>
+    <link rel="stylesheet" href="../shared/theme.css" />
+    <link rel="stylesheet" href="about.css" />
+    <script src="../shared/stars.js" defer></script>
+    <script src="../shared/api.js" defer></script>
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="about.js" defer></script>
+  </head>
+  <body>
+    <canvas id="stars"></canvas>
+
+    <header class="topbar">
+      <a class="topbar-btn logout" href="../Login_Page/login.html" data-logout title="Log out">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span class="label">Logout</span>
+      </a>
+      <a class="brand" href="../Dashboard/dashboard.html" title="Dashboard">
+        <img src="../../Styles/LibraLoggerLogo.png" alt="" />
+        Libra <span>Logger</span>
+      </a>
+      <a class="topbar-btn settings" href="../User_Settings/settings.html" title="Settings">
+        <span class="label">Settings</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      </a>
+    </header>
+
+    <main class="page">
+      <div class="page-header">
+        <h1 class="page-title">About</h1>
+        <p class="page-subtitle">Libra Logger &mdash; a budgeting app for UTD students.</p>
+      </div>
+
+      <div class="about-layout">
+        <section class="card mission" aria-labelledby="missionTitle">
+          <img class="about-logo" src="../../Styles/LibraLoggerLogo.png" alt="Libra Logger logo" />
+          <h2 class="card-title" id="missionTitle">Our mission</h2>
+          <p>
+            Libra Logger helps students keep their spending in balance. Log purchases or upload receipts,
+            set a weekly or monthly budget, and get a heads-up before you go over &mdash; all in one place.
+          </p>
+          <ul class="feature-list">
+            <li><strong>Track</strong> &mdash; log transactions, subscriptions, and refunds.</li>
+            <li><strong>Budget</strong> &mdash; set a limit and an alert threshold.</li>
+            <li><strong>Analyze</strong> &mdash; see where your money goes over time.</li>
+            <li><strong>Learn</strong> &mdash; find UTD resources for saving money.</li>
+          </ul>
+        </section>
+
+        <section class="card" aria-labelledby="teamTitle">
+          <h2 class="card-title" id="teamTitle">The team</h2>
+          <p class="muted">CS 3354 &middot; Group 6</p>
+          <ul class="team" id="teamList">
+            <li>Thomas Nguyen</li>
+            <li>Paulo Penaga</li>
+            <li>Adam Davis</li>
+            <li>Fawaz Jamshed</li>
+            <li>Hoan Nguyen</li>
+            <li>Sureyya Goktug Gokbulut</li>
+            <li>Franck Seka</li>
+          </ul>
+        </section>
+
+        <section class="card" aria-labelledby="techTitle">
+          <h2 class="card-title" id="techTitle">Under the hood</h2>
+          <dl class="facts">
+            <div><dt>Frontend</dt><dd>HTML / CSS / JavaScript</dd></div>
+            <div><dt>Server</dt><dd>Node.js on Railway</dd></div>
+            <div><dt>Database</dt><dd>MySQL on Railway</dd></div>
+            <div><dt>Version</dt><dd id="appVersion">&ndash;</dd></div>
+            <div><dt>Data mode</dt><dd id="appMode">&ndash;</dd></div>
+          </dl>
+          <a class="btn btn-ghost" href="https://github.com/T0MN0M/LibraBudget" target="_blank" rel="noopener">View repository</a>
+        </section>
+
+        <section class="card" aria-labelledby="creditsTitle">
+          <h2 class="card-title" id="creditsTitle">Credits</h2>
+          <ul class="credits">
+            <li>Font: <a href="https://www.fontspace.com/a-astro-space-font-f46028" target="_blank" rel="noopener">AstroSpace</a> (freeware, non-commercial)</li>
+            <li>Colors: UT Dallas web standards (UTD Orange, UTD Green, Accent Mint)</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+
+    <nav class="app-nav" aria-label="Main">
+      <ul>
+        <li>
+          <a href="../Transactions/transactions.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6M9 15h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" /></svg>
+            Transactions
+          </a>
+        </li>
+        <li>
+          <a href="../Analytics/analytics.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            Analytics
+          </a>
+        </li>
+        <li>
+          <a href="../Resources/resources.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
+            Resources
+          </a>
+        </li>
+        <li>
+          <a href="../About/about.html" aria-current="page">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M12 11v6M12 7.5v.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            About
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </body>
+</html>

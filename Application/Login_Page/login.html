@@ -1,92 +1,77 @@
-<!-- TUTORIAL FOLLOWED: https://www.youtube.com/watch?v=ACyX66rC-ww&list=PLO_ZMDiQrSzY89-MdKfPG8XwP7_seWS7J&t=1318s -->
-<!-- TBD: Add footer section when contents such as 'Home', 'Tutorial', 'About', and 'Contact' are implemented -->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Page</title>
-    <!-- Bootstrap 5 CDN for CSS and JS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
-    />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
-
+    <title>Login | Libra Logger</title>
+    <link rel="stylesheet" href="../shared/theme.css" />
     <link rel="stylesheet" href="login.css" />
+    <script src="../shared/stars.js" defer></script>
+    <script src="../shared/api.js" defer></script>
     <script src="login.js" defer></script>
   </head>
   <body>
-    <header>
-      <nav class="navbar navbar-expand-lg fixed-top">
-        <a href=""
-          ><img
-            src="placeholder.jpg"
-            height="50"
-            style="padding-left: 20px"
-            alt="placeholder for now"
-        /></a>
-      </nav>
-    </header>
+    <!-- Black background with moving stars -->
+    <canvas id="stars"></canvas>
 
-    <section class="container">
-      <h2>LOGIN</h2>
-      <hr />
+    <!-- 6. Home: back to the app's landing page -->
+    <a class="brand login-brand" href="../../LibraSide_DRAFT/index.html" title="Home">
+      <img src="../../Styles/LibraLoggerLogo.png" alt="" />
+      Libra <span>Logger</span>
+    </a>
 
-      <form class="form" method="post" action="">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <label for="username" class="control label">Username*</label>
-            <input
-              type="text"
-              class="form-control"
-              name="username"
-              placeholder="Enter username"
-            />
-          </div>
-        </div>
+    <main class="card login-card">
+      <img class="login-logo" src="../../Styles/LibraLoggerLogo.png" alt="Libra Logger logo" />
 
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <label for="password" class="form-label">Password*</label>
-            <input
-              type="text"
-              class="form-control"
-              name="password"
-              placeholder="Enter password"
-            />
-          </div>
-        </div>
+      <h1>Login</h1>
+      <hr class="title-rule" />
 
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <p>Forgot Password? <a href="">Click here</a></p>
-          </div>
-          <div class="col-xs-offset-2 mt-2">
-            <button type="submit" class="btn btn-warning" name="submit">
-              Login
+      <form id="loginForm" novalidate>
+        <!-- 1. Username -->
+        <label class="login-field">
+          <span>Username or email</span>
+          <input type="text" id="username" name="username" placeholder="Enter username or email" autocomplete="username" required />
+        </label>
+
+        <!-- 2. Password -->
+        <label class="login-field">
+          <span>Password</span>
+          <span class="password-wrap">
+            <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required />
+            <button type="button" id="togglePassword" class="eye-btn" aria-label="Show password" title="Show password">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+              </svg>
             </button>
-          </div>
-        </div>
-      </form>
-      <hr />
-      <div class="row-bottom">
-        <div class="col">
-          <p>
-            Create Account! <a href="..\Signup_Page\signup.html">Register</a>
-          </p>
-        </div>
+          </span>
+        </label>
 
-        <div class="col float-end">
-          <a href="">Home</a>
-        </div>
-      </div>
-    </section>
+        <!-- 3. Forgot password -->
+        <p class="forgot">Forgot password? <button type="button" id="forgotPassword" class="link-btn">Click here</button></p>
+
+        <p id="formMessage" class="form-message" role="alert"></p>
+
+        <!-- 4. Login -> Dashboard -->
+        <button type="submit" class="btn btn-primary login-submit">Login</button>
+      </form>
+
+      <div class="divider"><span>OR</span></div>
+
+      <button type="button" id="googleLogin" class="btn btn-google">
+        <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z" />
+          <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z" />
+          <path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z" />
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z" />
+        </svg>
+        Log in with Google
+      </button>
+
+      <!-- 5. Register -->
+      <p class="switch-link">New to Libra Logger? <a href="../Registration_Page/registration.html">Create an account</a></p>
+
+      <footer class="card-footer"><span>Libra Logger</span></footer>
+    </main>
   </body>
 </html>

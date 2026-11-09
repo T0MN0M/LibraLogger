@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Libra Logger</title>
+    <link rel="stylesheet" href="../shared/theme.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <script src="../shared/stars.js" defer></script>
+    <script src="../shared/api.js" defer></script>
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="dashboard.js" defer></script>
+  </head>
+  <body>
+    <canvas id="stars"></canvas>
+
+    <!-- ===== Top bar: Logout (left) · Brand (center) · Settings (right) ===== -->
+    <header class="topbar">
+      <a class="topbar-btn logout" href="../Login_Page/login.html" data-logout title="Log out">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span class="label">Logout</span>
+      </a>
+      <a class="brand" href="../Dashboard/dashboard.html" title="Dashboard">
+        <img src="../../Styles/LibraLoggerLogo.png" alt="" />
+        Libra <span>Logger</span>
+      </a>
+      <a class="topbar-btn settings" href="../User_Settings/settings.html" title="Settings">
+        <span class="label">Settings</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      </a>
+    </header>
+
+    <main class="page">
+      <h1 class="visually-hidden">Dashboard</h1>
+
+      <div class="dashboard">
+        <!-- ===== Left: Recent transactions ===== -->
+        <section class="card recent" aria-labelledby="recentTitle">
+          <h2 class="card-title" id="recentTitle">
+            Recent Transactions
+            <a class="card-link" href="../Transactions/transactions.html">View all &rarr;</a>
+          </h2>
+          <ul id="recentList" class="tx-list" aria-live="polite">
+            <li class="empty-state">Loading&hellip;</li>
+          </ul>
+          <a class="btn btn-ghost add-tx" href="../Transactions/transactions.html#add">+ Add transaction</a>
+        </section>
+
+        <!-- ===== Center: Budget status (rainbow meter) ===== -->
+        <section class="card budget" aria-labelledby="budgetTitle">
+          <h2 class="card-title budget-title" id="budgetTitle">
+            <span id="budgetPeriodLabel">Monthly Budget</span>
+            <a class="card-link" href="../Analytics/analytics.html#goals">Edit goal &rarr;</a>
+          </h2>
+
+          <div class="meter" id="budgetMeter">
+            <svg viewBox="0 0 240 150" role="img" aria-labelledby="meterDesc">
+              <title id="meterDesc">Budget used</title>
+              <!-- Color scale along the arc: green (0% spent) -> yellow (25%) -> orange (50%) -> red (75%+).
+                   The arc is a semicircle, so a point that is p of the way along it sits at
+                   x = 120 - 100*cos(pi*p); stop offsets are that x mapped onto 20..220:
+                   offset = (1 - cos(pi*p)) / 2  ->  0, 0.146, 0.5, 0.854 -->
+              <defs>
+                <linearGradient id="meterGradient" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="220" y2="0">
+                  <stop offset="0" class="stop-green" />
+                  <stop offset="0.146" class="stop-yellow" />
+                  <stop offset="0.5" class="stop-orange" />
+                  <stop offset="0.854" class="stop-red" />
+                  <stop offset="1" class="stop-red" />
+                </linearGradient>
+              </defs>
+              <!-- Track (full arc) -->
+              <path class="meter-track" d="M 20 120 A 100 100 0 0 1 220 120" pathLength="100" />
+              <!-- Fill (length set from percent used) -->
+              <path class="meter-fill" id="meterFill" d="M 20 120 A 100 100 0 0 1 220 120" pathLength="100" />
+              <!-- Alert threshold tick (e.g. 80%) -->
+              <line class="meter-tick" id="meterTick" x1="0" y1="0" x2="0" y2="0" />
+              <text class="meter-scale" x="20" y="148" text-anchor="middle">0%</text>
+              <text class="meter-scale" x="220" y="148" text-anchor="middle">100%</text>
+            </svg>
+
+            <div class="meter-center">
+              <div class="meter-pct" id="meterPct">&ndash;%</div>
+              <div class="meter-sub">of budget used</div>
+            </div>
+          </div>
+
+          <p class="budget-status" id="budgetStatus" data-status="good">
+            <span class="status-icon" aria-hidden="true"></span>
+            <span class="status-text">Loading&hellip;</span>
+          </p>
+
+          <dl class="budget-figures">
+            <div>
+              <dt>Spent</dt>
+              <dd id="budgetSpent">&ndash;</dd>
+            </div>
+            <div>
+              <dt>Limit</dt>
+              <dd id="budgetLimit">&ndash;</dd>
+            </div>
+            <div>
+              <dt>Left</dt>
+              <dd id="budgetLeft">&ndash;</dd>
+            </div>
+          </dl>
+
+          <p class="budget-period" id="budgetPeriod"></p>
+        </section>
+
+        <!-- ===== Right: User profile card ===== -->
+        <section class="card profile" aria-labelledby="profileName">
+          <div class="avatar" id="profileAvatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="56" height="56">
+              <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </div>
+          <h2 class="profile-name" id="profileName">&nbsp;</h2>
+          <p class="profile-nickname" id="profileNickname"></p>
+          <p class="profile-email" id="profileEmail"></p>
+
+          <div class="streak">
+            <span class="streak-count" id="streakCount">&ndash;</span>
+            <span class="streak-label">weeks under budget</span>
+          </div>
+
+          <dl class="profile-meta">
+            <div>
+              <dt>Member since</dt>
+              <dd id="profileSince">&ndash;</dd>
+            </div>
+            <div>
+              <dt>Birthday</dt>
+              <dd id="profileBirthday">&ndash;</dd>
+            </div>
+            <div>
+              <dt>2FA</dt>
+              <dd id="profile2fa">&ndash;</dd>
+            </div>
+          </dl>
+
+          <a class="btn btn-mint" href="../User_Settings/settings.html">Edit profile</a>
+        </section>
+      </div>
+    </main>
+
+    <!-- ===== Bottom navigation ===== -->
+    <nav class="app-nav" aria-label="Main">
+      <ul>
+        <li>
+          <a href="../Transactions/transactions.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6M9 15h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" /></svg>
+            Transactions
+          </a>
+        </li>
+        <li>
+          <a href="../Analytics/analytics.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            Analytics
+          </a>
+        </li>
+        <li>
+          <a href="../Resources/resources.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
+            Resources
+          </a>
+        </li>
+        <li>
+          <a href="../About/about.html">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M12 11v6M12 7.5v.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            About
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </body>
+</html>

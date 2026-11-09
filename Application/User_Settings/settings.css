@@ -1,67 +1,18 @@
-/* ===== Font (AstroSpace, from Styles/a-astro-space-font.zip) ===== */
-@font-face {
-  font-family: "AstroSpace";
-  src: url("../../Styles/fonts/AstroSpace-0Wl3o.otf") format("opentype"),
-       url("../../Styles/fonts/AstroSpace-eZ2Bg.ttf") format("truetype");
-  font-display: swap;
-}
+/* Font, palette, top bar and starfield come from ../shared/theme.css */
 
-/* ===== Theme (palette from Styles/Colors.png) ===== */
-:root {
-  --utd-orange: #e87500;
-  --utd-orange-dark: #c95100;
-  --utd-green: #154734;
-  --utd-mint: #5fe0b7;
-
-  --bg: #000;
-  --card: rgba(21, 71, 52, 0.35);
-  --border: rgba(95, 224, 183, 0.35);
-  --text: #eaf4f0;
-  --muted: #9dbbb0;
-  --error: #ff8a65;
-
-  --font-display: "AstroSpace", "Segoe UI", sans-serif;
-  --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --radius: 10px;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  min-height: 100vh;
+/* ===== Layout: card centered below the top bar ===== */
+.settings-main {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
 }
-
-#stars {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-
-.brand {
-  position: absolute;
-  top: 1.25rem;
-  left: 1.5rem;
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.brand span { color: var(--utd-orange); }
 
 /* ===== Card ===== */
-.card {
+.settings-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   padding: 1.5rem 2rem 1.25rem;
   background: var(--card);
   border: 1px solid var(--border);
@@ -291,18 +242,6 @@ h1 {
   background: var(--border);
 }
 
-/* ===== Libra logo (bottom-right corner) ===== */
-.corner-logo {
-  position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-  border: 3px solid var(--utd-green);
-  border-radius: 50%;
-}
-
 /* ===== 2FA popup ===== */
 .modal-backdrop {
   position: fixed;
@@ -375,12 +314,89 @@ h1 {
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes pop-in { from { opacity: 0; transform: scale(0.94); } }
 
+/* ===== Inline editing ===== */
+.field .edit-input {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  font: inherit;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--utd-mint);
+  border-radius: 6px;
+}
+
+.pfp img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.pfp { overflow: hidden; }
+
+/* ===== Profile card colors ===== */
+.color-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.color-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.color-pick input {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-outline {
+  color: var(--utd-mint);
+  background: transparent;
+  border: 2px solid var(--utd-mint);
+}
+
+.btn-outline:hover { color: var(--utd-green); background: var(--utd-mint); }
+
+/* 2FA already on -> button turns into "Disable 2FA" */
+.btn-2fa.is-on {
+  color: var(--utd-mint);
+  background: transparent;
+  border: 2px solid var(--utd-mint);
+}
+
+/* ===== App info row ===== */
+.app-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.link-btn {
+  padding: 0;
+  font: inherit;
+  color: var(--utd-mint);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
 /* ===== Small screens ===== */
 @media (max-width: 480px) {
-  body { padding: 3.5rem 0.75rem 6rem; } /* room for brand + corner logo */
-  .brand { top: 1rem; left: 1rem; font-size: 1.15rem; }
-  .card { padding: 1.2rem 1.1rem 1rem; }
+  .settings-main { padding: 1rem 0.75rem; }
+  .settings-card { padding: 1.2rem 1.1rem 1rem; }
   .pfp { width: 76px; height: 76px; }
   .field { grid-template-columns: 5.5rem 1fr auto; }
-  .corner-logo { width: 56px; height: 56px; right: 0.75rem; bottom: 0.75rem; }
+  .color-row { grid-template-columns: 1fr; }
 }

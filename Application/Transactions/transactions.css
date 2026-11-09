@@ -1,0 +1,127 @@
+.tx-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.checkbox.full { grid-column: 1 / -1; }
+
+.receipt-title { margin-top: 1.4rem; }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.4rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.dropzone:hover,
+.dropzone.dragging {
+  color: var(--utd-mint);
+  border-color: var(--utd-mint);
+}
+
+.dropzone small { font-size: 0.75rem; }
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.table-wrap { overflow-x: auto; }
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tx-table th {
+  padding: 0.5rem;
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.tx-table td {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+
+.tx-table tbody tr:hover { background: rgba(95, 224, 183, 0.06); }
+
+.tx-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-table tr.refunded .num {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.icon-btn:hover { color: var(--utd-mint); border-color: var(--utd-mint); }
+.icon-btn.danger:hover { color: var(--error); border-color: var(--error); }
+
+.table-summary {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .tx-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  .filters { grid-template-columns: 1fr; }
+}
+
+.span-all { grid-column: 1 / -1; }

@@ -1,97 +1,202 @@
-* {
-    margin: 0;
-    padding: 0;
-}
+/* Login page — font, palette, .card, .btn and .brand come from ../shared/theme.css.
+   Layout mirrors Registration_Page so the two screens feel like one flow. */
 
 body {
-    background-image: linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)), url("background.jpg");
-    display: flex;
-    background-attachment: fixed;
-    justify-content: center;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 1.5rem 1.5rem; /* room for the brand in the corner */
 }
 
-.container {
-    max-width: 450px;
-    background-color: rgba(255, 255, 255, .2);
-    padding: 5px 20px 10px 20px;
-    margin-top: 10%;
-    border-radius: 20px;
+/* ===== Brand (top-left, outside the card) ===== */
+.login-brand {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
 }
 
-label {
-    color: black;
-}
-h2 {
-    padding-top: 20px;
-    color: green;
-}
-
-.col-sm-11 {
-    padding-bottom: 10px;
-}
-body a {
-    text-decoration: none;
-    color: black;
-    font-weight: 500;
+/* ===== Card ===== */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 2rem 1.25rem;
+  text-align: center;
 }
 
-body label {
-    padding-left: 18px;
+.login-logo {
+  display: block;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1rem;
+  object-fit: contain;
+  border: 4px solid var(--utd-green);
+  border-radius: 50%;
 }
 
-p {
-    color: gray;
+h1 {
+  font-family: var(--font-display);
+  font-weight: normal;
+  font-size: clamp(1.4rem, 5vw, 1.8rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--utd-orange);
 }
 
-.btn {
-    width: 100%;
-    padding: 10px 70px 10px 70px;
-    border: none !important;
-    border-radius: 25px !important;
-    background-color: limegreen;
+/* ===== Form ===== */
+#loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-align: left;
 }
 
-input[type=text], input[type=password] {
-    border-radius: 10px;
-    font-size: 18px;
-    border: none !important;
-    padding: 12px 12px 12px 23px;
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
-hr {
-    background-color: #fff;
-    padding: 1px;
+.login-field input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.row-bottom .col {
-    display: inline-block;
-    margin: 0;
+.login-field input::placeholder { color: var(--muted); }
+
+.login-field input:focus {
+  border-color: var(--utd-mint);
+  box-shadow: 0 0 0 3px rgba(95, 224, 183, 0.2);
 }
 
-.btn:hover {
-    background-color: green;
+.login-field input.invalid { border-color: var(--error); }
+
+/* Password + eye toggle (same as Registration_Page) */
+.password-wrap { position: relative; display: block; }
+.password-wrap input { padding-right: 2.8rem; }
+
+.eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-/*
-======================
-    RESPONSIVENESS
-======================
-*/
+.eye-btn:hover,
+.eye-btn.active { color: var(--utd-mint); }
 
-@media only screen and (max-width: 990) {
-    .navbar img {
-        height: 65px;
-        margin-top: 10px;
-    }
-    .container {
-        max-width: 350;
-        background-color: rgba(255, 255, 255, .1);
-        padding: 5px 20px 10px 20px;
-        margin-top: 30%;
-        border-radius: 20px;
-    }
+.forgot {
+  margin-top: -0.3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: right;
 }
 
-.navbar {
-    text-align: center;
+.link-btn {
+  padding: 0;
+  font: inherit;
+  color: var(--utd-mint);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.link-btn:hover { text-decoration: underline; }
+
+.form-message {
+  min-height: 1.2em;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--error);
+}
+
+.form-message.info { color: var(--utd-mint); }
+
+/* ===== Buttons ===== */
+.login-card .btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+.btn-google {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--utd-mint);
+}
+
+.btn-google:hover { background: rgba(95, 224, 183, 0.12); }
+
+/* "— OR —" divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.1rem 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.switch-link {
+  margin-top: 1.1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.switch-link a { text-decoration: none; font-weight: 600; }
+.switch-link a:hover { text-decoration: underline; }
+
+/* "— LIBRA LOGGER —" footer (same as Settings) */
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-footer::before,
+.card-footer::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ===== Small screens ===== */
+@media (max-width: 480px) {
+  body { padding: 4rem 0.75rem 1rem; }
+  .login-brand { top: 1rem; left: 1rem; font-size: 1.1rem; }
+  .login-card { padding: 1.5rem 1.2rem 1rem; }
 }

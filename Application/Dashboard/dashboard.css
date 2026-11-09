@@ -1,0 +1,314 @@
+/* ===== Dashboard layout: Recent (left) · Budget (center) · Profile (right) ===== */
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.35fr) minmax(240px, 0.9fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* ===== Recent transactions ===== */
+.recent {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-list {
+  flex: 1;
+  list-style: none;
+}
+
+.tx-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.tx-item:last-child { border-bottom: none; }
+
+.tx-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--utd-mint);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.tx-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.tx-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.tx-item.refunded .tx-amount {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.add-tx { margin-top: 0.9rem; }
+
+/* ===== Budget meter (rainbow arc) ===== */
+.budget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-color: var(--utd-orange);
+}
+
+.budget-title { width: 100%; color: var(--utd-orange); }
+
+.meter {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.meter svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.meter-track,
+.meter-fill {
+  fill: none;
+  stroke-width: 22;
+  stroke-linecap: round;
+}
+
+/* Arc colors by budget remaining: 100% green, 75% yellow, 50% orange, 25% red */
+.meter {
+  --meter-green: #4ade80;
+  --meter-yellow: #facc15;
+  --meter-orange: var(--utd-orange);
+  --meter-red: #ef4444;
+}
+
+.stop-green { stop-color: var(--meter-green); }
+.stop-yellow { stop-color: var(--meter-yellow); }
+.stop-orange { stop-color: var(--meter-orange); }
+.stop-red { stop-color: var(--meter-red); }
+
+/* Track shows the whole scale faintly; the fill shows it at full strength */
+.meter-track {
+  stroke: url(#meterGradient);
+  opacity: 0.18;
+}
+
+.meter-fill {
+  stroke: url(#meterGradient);
+  stroke-dasharray: 0 200; /* gap > path length so the dash never repeats at the 100% end */
+  transition: stroke-dasharray 0.9s ease-out;
+}
+
+.meter-tick {
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.meter-scale {
+  font-size: 9px;
+  fill: var(--muted);
+}
+
+.meter-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14%;
+}
+
+.meter-pct {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.meter-sub {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.budget-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.9rem 0 1rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.budget-status[data-status="good"] { color: var(--status-good); }
+.budget-status[data-status="warning"] { color: var(--status-warning); }
+.budget-status[data-status="critical"] { color: var(--status-critical); }
+
+.status-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: currentColor; /* inherits the status color from .budget-status */
+  border-radius: 50%;
+}
+
+.status-icon::before { color: #000; }
+.budget-status[data-status="good"] .status-icon::before { content: "\2713"; }
+.budget-status[data-status="warning"] .status-icon::before { content: "!"; }
+.budget-status[data-status="critical"] .status-icon::before { content: "\00d7"; }
+
+.budget-figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.budget-figures div { padding: 0.7rem 0.25rem; }
+.budget-figures div + div { border-left: 1px solid var(--border-soft); }
+
+.budget-figures dt {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.budget-figures dd {
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-period {
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ===== Profile card ===== */
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  overflow: hidden;
+  color: var(--utd-mint);
+  background: rgba(0, 0, 0, 0.45);
+  border: 4px solid var(--utd-orange);
+  border-radius: 50%;
+}
+
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-name {
+  margin-top: 0.8rem;
+  font-family: var(--font-display);
+  font-weight: normal;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.profile-nickname {
+  min-height: 1.2em;
+  color: var(--utd-orange);
+  font-size: 0.9rem;
+}
+
+.profile-email {
+  font-size: 0.85rem;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.streak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 0.7rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.streak-count {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--utd-mint);
+}
+
+.streak-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.profile-meta {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.profile-meta div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.profile-meta dt { color: var(--muted); }
+
+.profile .btn { width: 100%; }
+
+/* ===== Responsive: budget first, then the side cards ===== */
+@media (max-width: 1024px) {
+  .dashboard { grid-template-columns: 1fr 1fr; }
+  .budget { grid-column: 1 / -1; order: -1; }
+}
+
+@media (max-width: 640px) {
+  .dashboard { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter-fill { transition: none; }
+}
