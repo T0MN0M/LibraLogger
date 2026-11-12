@@ -336,7 +336,7 @@ textarea.input {
 
 .app-nav ul {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr); /* Home · Transactions · Analytics · Resources · About */
   gap: 0.75rem;
   max-width: var(--shell-width);
   margin: 0 auto;
@@ -375,6 +375,29 @@ textarea.input {
 }
 
 .app-nav svg { flex-shrink: 0; }
+
+/* ===== Large screens: use more of the width and scale everything up =====
+   Sizes across the app are in rem, so raising the root font size grows text,
+   cards, icons and the budget meter together. */
+@media (min-width: 1600px) {
+  :root { --shell-width: 1520px; }
+}
+
+@media (min-width: 1920px) {
+  html { font-size: 112.5%; } /* 18px */
+  :root { --shell-width: 1760px; }
+}
+
+@media (min-width: 2560px) {
+  html { font-size: 125%; } /* 20px */
+  :root { --shell-width: 2200px; }
+}
+
+/* 4K monitors at 100% display scaling */
+@media (min-width: 3200px) {
+  html { font-size: 162.5%; } /* 26px */
+  :root { --shell-width: 3000px; }
+}
 
 /* ===== Small screens ===== */
 @media (max-width: 720px) {

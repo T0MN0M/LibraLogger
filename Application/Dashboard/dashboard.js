@@ -5,6 +5,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { formatMoney, formatDate } = api.util;
   const $ = (id) => document.getElementById(id);
 
+  // ----- Encouragement messages by % of budget REMAINING -----
+  // (Declared before the data loads below: renderBudget() reads them.)
+  // Levels match the arc colors: green > 75%, yellow 50–75%, orange 25–50%, red under 25%.
+  // When a level has more than one message, one is picked at random on each visit.
+  const BUDGET_MESSAGES = [
+    {
+      level: "great", // more than 75% left
+      min: 75,
+      texts: ["You're doing great! Keep up the good spending habits!", "You're a spending wizard, Harry!"],
+    },
+    {
+      level: "good", // 50% – 75% left
+      min: 50,
+      texts: ["More than half your budget remains."],
+    },
+    {
+      level: "wary", // 25% – 50% left
+      min: 25,
+      texts: [
+        "Be wary of your spending, less than half of your budget remains.",
+        "Like the sand of time, your budget is being spent",
+      ],
+    },
+    {
+      level: "caution", // 1% – 25% left (anything above 0%)
+      min: 0,
+      texts: ["Proceed with caution, your budget dwindles."],
+    },
+  ];
+  const OUT_OF_BUDGET = {
+    level: "empty", // 0% left, or over budget
+    texts: ["You ran out of budget for this period, better luck next time...", "Game over. Try to spend less next period"],
+  };
+
   try {
     const [status, recent, categories, profile, streak] = await Promise.all([
       api.getBudgetStatus(),
@@ -66,6 +100,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const unit = s.period === "WEEKLY" ? "week" : "month";
     $("budgetPeriod").textContent =
       `${formatDate(s.period_start)} – ${formatDate(s.period_end)} · day ${s.day_of_period} of ${s.days_in_period} this ${unit}`;
+
+    renderMessage(100 - pct);
+  }
+
+  // ----- Center: encouragement message -----
+  function renderMessage(remainingPct) {
+    const bucket =
+      remainingPct <= 0 ? OUT_OF_BUDGET : BUDGET_MESSAGES.find((b) => remainingPct > b.min) ?? BUDGET_MESSAGES.at(-1);
+    const el = $("budgetMessage");
+    el.dataset.level = bucket.level;
+    el.textContent = bucket.texts[Math.floor(Math.random() * bucket.texts.length)];
   }
 
   // ----- Left: recent transactions (Dashboard.recent_Transactions) -----

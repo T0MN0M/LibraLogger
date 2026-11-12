@@ -1,7 +1,15 @@
 /* ===== Dashboard layout: Recent (left) · Budget (center) · Profile (right) ===== */
+/* Center the dashboard vertically when the screen is taller than its content */
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Side cards share the space equally; the budget card gets ~1.8x their width */
 .dashboard {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.35fr) minmax(240px, 0.9fr);
+  grid-template-columns: minmax(16rem, 1fr) minmax(23rem, 1.8fr) minmax(16rem, 1fr);
   gap: 1.25rem;
   align-items: stretch;
 }
@@ -11,6 +19,15 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Side column is narrower now: tighten the title, never split "View all →" */
+.recent .card-title {
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+}
+
+.dashboard .card-link { white-space: nowrap; }
 
 .tx-list {
   flex: 1;
@@ -31,8 +48,8 @@
 .tx-icon {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 2.15rem;
+  height: 2.15rem;
   font-family: var(--font-display);
   font-size: 0.85rem;
   color: var(--utd-mint);
@@ -78,7 +95,7 @@
 .meter {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 30rem;
 }
 
 .meter svg {
@@ -140,7 +157,7 @@
 
 .meter-pct {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-size: clamp(2.4rem, 4.2vw, 4rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -169,8 +186,8 @@
 .status-icon {
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: 1.15rem;
+  height: 1.15rem;
   font-size: 0.75rem;
   font-weight: 700;
   background: currentColor; /* inherits the status color from .budget-status */
@@ -209,10 +226,23 @@
 }
 
 .budget-period {
-  margin-top: 0.8rem;
+  margin: 0.8rem 0 1rem; /* bottom margin = minimum gap above the message */
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+/* Encouragement message at the bottom of the budget card: plain floating italic text */
+.budget-message {
+  width: 100%;
+  margin-top: auto; /* pin to the bottom of the card */
+  padding: 0 0.5rem;
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.budget-message:empty { display: none; }
 
 /* ===== Profile card ===== */
 .profile {
@@ -225,8 +255,8 @@
 .avatar {
   display: grid;
   place-items: center;
-  width: 108px;
-  height: 108px;
+  width: 6.75rem;
+  height: 6.75rem;
   overflow: hidden;
   color: var(--utd-mint);
   background: rgba(0, 0, 0, 0.45);
@@ -299,8 +329,15 @@
 
 .profile .btn { width: 100%; }
 
+/* ===== Large screens (page width + base font size also scale up in theme.css) ===== */
+@media (min-width: 1600px) {
+  .dashboard { gap: 1.75rem; }
+  .dashboard .card { padding: 1.6rem 1.8rem; }
+  .meter { max-width: 34rem; }
+}
+
 /* ===== Responsive: budget first, then the side cards ===== */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) { /* 3 columns get cramped below this */
   .dashboard { grid-template-columns: 1fr 1fr; }
   .budget { grid-column: 1 / -1; order: -1; }
 }
