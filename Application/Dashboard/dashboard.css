@@ -14,6 +14,81 @@
   align-items: stretch;
 }
 
+/* ===== Hexagon card frames =====
+   The card itself is clipped to a hexagon (so its translucent fill and blur follow the shape),
+   and ::before paints the outline as a hexagonal ring (outer polygon minus an inset copy).
+   --hex-cut: how far the pointed corners reach in; --hex-bw: outline thickness.
+   Side cards: flat top & bottom, points on the left & right.
+   Budget card: flat left & right, points on the top & bottom. */
+.dashboard .card {
+  --hex-cut: 1.5rem;
+  --hex-bw: 1px;
+  --hex-color: var(--border);
+  position: relative;
+  border: none;
+  padding: 1.4rem calc(var(--hex-cut) + 0.5rem);
+}
+
+.dashboard .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--hex-color);
+  pointer-events: none;
+}
+
+/* Recent transactions + profile: pointy sides */
+.dashboard .recent,
+.dashboard .profile {
+  clip-path: polygon(
+    var(--hex-cut) 0, calc(100% - var(--hex-cut)) 0, 100% 50%,
+    calc(100% - var(--hex-cut)) 100%, var(--hex-cut) 100%, 0 50%
+  );
+}
+
+.dashboard .recent::before,
+.dashboard .profile::before {
+  clip-path: polygon(evenodd,
+    var(--hex-cut) 0, calc(100% - var(--hex-cut)) 0, 100% 50%,
+    calc(100% - var(--hex-cut)) 100%, var(--hex-cut) 100%, 0 50%,
+    var(--hex-cut) 0,
+    calc(var(--hex-cut) + var(--hex-bw)) var(--hex-bw),
+    calc(100% - var(--hex-cut) - var(--hex-bw)) var(--hex-bw),
+    calc(100% - var(--hex-bw)) 50%,
+    calc(100% - var(--hex-cut) - var(--hex-bw)) calc(100% - var(--hex-bw)),
+    calc(var(--hex-cut) + var(--hex-bw)) calc(100% - var(--hex-bw)),
+    var(--hex-bw) 50%,
+    calc(var(--hex-cut) + var(--hex-bw)) var(--hex-bw)
+  );
+}
+
+/* Budget: pointy top & bottom */
+.dashboard .budget {
+  --hex-cut: 2.5rem;
+  --hex-color: var(--utd-orange);
+  padding: calc(var(--hex-cut) + 0.4rem) 1.6rem;
+  clip-path: polygon(
+    50% 0, 100% var(--hex-cut), 100% calc(100% - var(--hex-cut)),
+    50% 100%, 0 calc(100% - var(--hex-cut)), 0 var(--hex-cut)
+  );
+}
+
+.dashboard .budget::before {
+  clip-path: polygon(evenodd,
+    50% 0, 100% var(--hex-cut), 100% calc(100% - var(--hex-cut)),
+    50% 100%, 0 calc(100% - var(--hex-cut)), 0 var(--hex-cut),
+    50% 0,
+    50% var(--hex-bw),
+    calc(100% - var(--hex-bw)) calc(var(--hex-cut) + var(--hex-bw)),
+    calc(100% - var(--hex-bw)) calc(100% - var(--hex-cut) - var(--hex-bw)),
+    50% calc(100% - var(--hex-bw)),
+    var(--hex-bw) calc(100% - var(--hex-cut) - var(--hex-bw)),
+    var(--hex-bw) calc(var(--hex-cut) + var(--hex-bw)),
+    50% var(--hex-bw)
+  );
+}
+
 /* ===== Recent transactions ===== */
 .recent {
   display: flex;
@@ -87,7 +162,6 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border-color: var(--utd-orange);
 }
 
 .budget-title { width: 100%; color: var(--utd-orange); }
@@ -332,7 +406,9 @@
 /* ===== Large screens (page width + base font size also scale up in theme.css) ===== */
 @media (min-width: 1600px) {
   .dashboard { gap: 1.75rem; }
-  .dashboard .card { padding: 1.6rem 1.8rem; }
+  .dashboard .recent,
+  .dashboard .profile { padding: 1.6rem calc(var(--hex-cut) + 0.7rem); }
+  .dashboard .budget { padding: calc(var(--hex-cut) + 0.6rem) 1.8rem; }
   .meter { max-width: 34rem; }
 }
 

@@ -1,0 +1,13 @@
+{
+  "name": "libra-logger",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Libra Logger — SE 3354 Group 6 budgeting app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
