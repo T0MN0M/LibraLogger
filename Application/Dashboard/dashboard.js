@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderBudget(status);
     renderRecent(recent, categories);
     renderProfile(profile, streak);
+    renderBirthdayMessage(profile);
   } catch (err) {
     console.error(err);
     $("recentList").innerHTML = '<li class="empty-state">Could not load data.</li>';
@@ -111,6 +112,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     const el = $("budgetMessage");
     el.dataset.level = bucket.level;
     el.textContent = bucket.texts[Math.floor(Math.random() * bucket.texts.length)];
+  }
+
+  // ----- Center: birthday easter egg (overrides the encouragement message) -----
+  function renderBirthdayMessage(p) {
+    if (!p.birthday) return;
+    const [, month, day] = p.birthday.split("-").map(Number);
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1;
+    const todayDay = today.getDate();
+    // Feb 29 birthdays get celebrated on Feb 28 in non-leap years.
+    const isLeapYear = new Date(today.getFullYear(), 1, 29).getDate() === 29;
+    const isBirthday =
+      (month === todayMonth && day === todayDay) ||
+      (month === 2 && day === 29 && !isLeapYear && todayMonth === 2 && todayDay === 28);
+    if (!isBirthday) return;
+
+    const el = $("budgetMessage");
+    el.dataset.level = "birthday";
+    el.textContent = `It's ya birthday. Don't worry about budgeting today 🎂🎂🎂🎉🎉🎉🎁🎁🎁 ${p.user_name}`;
   }
 
   // ----- Left: recent transactions (Dashboard.recent_Transactions) -----

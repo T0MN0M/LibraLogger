@@ -122,7 +122,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.target === modal) closeModal();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.hidden) closeModal();
+    if (e.key !== "Escape") return;
+    if (!modal.hidden) closeModal();
+    else if (!pwModal.hidden) closePasswordModal();
   });
   confirmBtn.addEventListener("click", async () => {
     // TODO: backend sends the 2FA test email (VerificationToken type SMS_2FA / EMAIL)
@@ -130,6 +132,90 @@ document.addEventListener("DOMContentLoaded", async () => {
     closeModal();
     renderProfile();
     say("2FA enabled. (Test email will be sent once the email service is connected.)");
+  });
+
+  // ----- Change password -----
+  // The real password is stored only as a hash, so it can't be shown here.
+  // The eye buttons just reveal what the user is typing into this form.
+  const pwModal = $("passwordModal");
+  const pwForm = $("passwordForm");
+  const pwError = $("passwordError");
+  const pwOpenBtn = $("changePassword");
+  const currentPw = $("currentPassword");
+  const newPw = $("newPassword");
+  const confirmPw = $("confirmPassword");
+  const pwInputs = [currentPw, newPw, confirmPw];
+
+  const openPasswordModal = () => {
+    pwForm.reset();
+    pwError.textContent = "";
+    pwInputs.forEach((input) => {
+      input.type = "password";
+      input.classList.remove("invalid");
+    });
+    pwForm.querySelectorAll(".eye-btn").forEach((btn) => setEyeState(btn, false));
+    pwModal.hidden = false;
+    currentPw.focus();
+  };
+  const closePasswordModal = () => {
+    pwModal.hidden = true;
+    pwOpenBtn.focus();
+  };
+
+  function setEyeState(btn, shown) {
+    btn.classList.toggle("active", shown);
+    btn.setAttribute("aria-label", shown ? "Hide password" : "Show password");
+    btn.title = shown ? "Hide password" : "Show password";
+  }
+
+  pwOpenBtn.addEventListener("click", openPasswordModal);
+  pwModal.querySelector("[data-close-modal]").addEventListener("click", closePasswordModal);
+  pwModal.addEventListener("click", (e) => {
+    if (e.target === pwModal) closePasswordModal();
+  });
+
+  pwForm.querySelectorAll(".eye-btn").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const input = btn.parentElement.querySelector("input");
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      setEyeState(btn, show);
+    })
+  );
+
+  pwInputs.forEach((input) => input.addEventListener("input", () => input.classList.remove("invalid")));
+
+  pwForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    pwInputs.forEach((input) => input.classList.remove("invalid"));
+
+    // Same rules as the registration page.
+    const fail = (input, msg) => {
+      input.classList.add("invalid");
+      input.focus();
+      pwError.textContent = msg;
+    };
+    const next = newPw.value;
+    if (!currentPw.value) return fail(currentPw, "Enter your current password.");
+    if (next.length < 8) return fail(newPw, "Password must be at least 8 characters.");
+    if (next.length > 100) return fail(newPw, "Password must be no more than 100 characters.");
+    if (!/[A-Z]/.test(next)) return fail(newPw, "Password must contain at least one uppercase letter.");
+    if (!/[0-9]/.test(next)) return fail(newPw, "Password must contain at least one number.");
+    if (next === currentPw.value) return fail(newPw, "New password must be different from your current one.");
+    if (confirmPw.value !== next) return fail(confirmPw, "Passwords don't match.");
+
+    const submitBtn = pwForm.querySelector('[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+      await api.changePassword(currentPw.value, next);
+      closePasswordModal();
+      say(api.config.mode === "mock" ? "Password updated. (Not saved until the backend is connected.)" : "Password updated.");
+    } catch (err) {
+      console.error(err);
+      fail(currentPw, "Could not change password. Check your current password and try again.");
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 
   // ----- Reset data (reset_User_Data) -----

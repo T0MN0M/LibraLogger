@@ -21,14 +21,14 @@
 
       <form id="registerForm" novalidate>
         <div class="row">
-          <input type="text" id="firstName" name="firstName" placeholder="First name" autocomplete="given-name" required />
-          <input type="text" id="lastName" name="lastName" placeholder="Last name" autocomplete="family-name" required />
+          <input type="text" id="firstName" name="firstName" placeholder="First name" autocomplete="given-name" maxlength="50" required />
+          <input type="text" id="lastName" name="lastName" placeholder="Last name" autocomplete="family-name" maxlength="50" required />
         </div>
 
         <input type="email" id="email" name="email" placeholder="Email address" autocomplete="email" required />
 
         <div class="password-wrap">
-          <input type="password" id="password" name="password" placeholder="Password" autocomplete="new-password" minlength="8" required />
+          <input type="password" id="password" name="password" placeholder="Password" autocomplete="new-password" minlength="8" maxlength="100" required />
           <button type="button" id="togglePassword" class="eye-btn" aria-label="Show password" title="Show password">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
               <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2" />

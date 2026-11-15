@@ -48,9 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = form.email;
 
     if (!first.value.trim()) fail(first, "First name is required.");
+    else if (first.value.trim().length > 50) fail(first, "First name must be less than 50 characters.");
     if (!last.value.trim()) fail(last, "Last name is required.");
+    else if (last.value.trim().length > 50) fail(last, "Last name must be less than 50 characters.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) fail(email, "Enter a valid email address.");
     if (password.value.length < 8) fail(password, "Password must be at least 8 characters.");
+    if (password.value.length > 100) fail(password, "Password must be no more than 100 characters.");
+    if (!/[A-Z]/.test(password.value)) fail(password, "Password must contain at least one uppercase letter.");
+    if (!/[0-9]/.test(password.value)) fail(password, "Password must contain at least one number.");
 
     if (!isValidDate(month.value, day.value, year.value)) {
       [month, day, year].forEach((el) => el.classList.add("invalid"));

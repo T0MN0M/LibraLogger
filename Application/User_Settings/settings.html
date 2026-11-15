@@ -81,7 +81,7 @@
           <div class="field">
             <dt>Password</dt>
             <dd class="masked">********</dd>
-            <button type="button" class="edit-btn" data-action="Changing your password (needs a reset email)" aria-label="Change password" title="Change password">
+            <button type="button" class="edit-btn" id="changePassword" aria-label="Change password" title="Change password">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
             </button>
           </div>
@@ -148,6 +148,49 @@
           <strong>YES</strong>, an email will be sent to test that 2FA is working.
         </p>
         <button type="button" id="confirm2fa" class="btn btn-primary">Yes</button>
+      </div>
+    </div>
+
+    <!-- Change password popup -->
+    <div id="passwordModal" class="modal-backdrop" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+        <button type="button" class="close-btn" data-close-modal aria-label="Close" title="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+        </button>
+        <h2 id="passwordTitle">Change Password</h2>
+        <hr class="title-rule" />
+        <form id="passwordForm" class="password-form" novalidate>
+          <label class="pw-field">
+            <span>Current password</span>
+            <span class="password-wrap">
+              <input type="password" id="currentPassword" autocomplete="current-password" required />
+              <button type="button" class="eye-btn" aria-label="Show password" title="Show password">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </span>
+          </label>
+          <label class="pw-field">
+            <span>New password</span>
+            <span class="password-wrap">
+              <input type="password" id="newPassword" autocomplete="new-password" minlength="8" maxlength="100" required />
+              <button type="button" class="eye-btn" aria-label="Show password" title="Show password">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </span>
+          </label>
+          <label class="pw-field">
+            <span>Confirm new password</span>
+            <span class="password-wrap">
+              <input type="password" id="confirmPassword" autocomplete="new-password" maxlength="100" required />
+              <button type="button" class="eye-btn" aria-label="Show password" title="Show password">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+              </button>
+            </span>
+          </label>
+          <p class="pw-hint">At least 8 characters, with one uppercase letter and one number.</p>
+          <p id="passwordError" class="pw-error" role="alert"></p>
+          <button type="submit" class="btn btn-primary">Save password</button>
+        </form>
       </div>
     </div>
   </body>

@@ -29,6 +29,7 @@
     logout: ["POST", "/api/auth/logout"],
     getProfile: ["GET", "/api/profile"],
     updateProfile: ["PATCH", "/api/profile"],
+    changePassword: ["POST", "/api/auth/password"], // body: { current_password, new_password }
     getBudget: ["GET", "/api/budget"],
     setBudget: ["PUT", "/api/budget"],
     getBudgetStatus: ["GET", "/api/budget/status"],
@@ -331,6 +332,13 @@
       return clone({ ...user, ...profile });
     },
 
+    async changePassword(/* current_password, new_password */) {
+      // Mock: passwords aren't stored in the browser, so there's nothing to check or save.
+      // TODO(remote): the server verifies current_password against users.hash_password,
+      // then stores a new hash of new_password. Never store or send back plain text.
+      return null;
+    },
+
     async getBudget() {
       const db = load();
       return clone(db.budgets.find((b) => b.user_ID === currentUserId()) || db.budgets[0]);
@@ -431,6 +439,8 @@
     logout: () => http("logout"),
     getProfile: () => http("getProfile"),
     updateProfile: (fields) => http("updateProfile", { body: fields }),
+    changePassword: (current_password, new_password) =>
+      http("changePassword", { body: { current_password, new_password } }),
     getBudget: () => http("getBudget"),
     setBudget: (fields) => http("setBudget", { body: fields }),
     getBudgetStatus: () => http("getBudgetStatus"),
