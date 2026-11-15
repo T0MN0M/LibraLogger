@@ -11,7 +11,7 @@ const path = require("path");
 
 const PORT = process.env.PORT || 3000; // Railway sets PORT automatically
 const ROOT = __dirname;
-const HOME_PAGE = "/Application/Login_Page/login.html"; // where "/" redirects
+const HOME_PAGE = "/Application/Registration_Page/registration.html"; // where "/" redirects
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
