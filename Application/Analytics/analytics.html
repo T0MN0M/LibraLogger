@@ -51,7 +51,13 @@
       <div class="grid-2">
         <!-- ===== Line: cumulative spending ===== -->
         <section class="card" aria-labelledby="lineTitle">
-          <h2 class="card-title" id="lineTitle">Cumulative spending</h2>
+          <div class="card-head">
+            <h2 class="card-title" id="lineTitle">Cumulative spending</h2>
+            <div class="segmented segmented-sm" role="group" aria-label="Chart view" id="viewControl">
+              <button type="button" data-view="CUMULATIVE" aria-pressed="true">Cumulative</button>
+              <button type="button" data-view="PURCHASES" aria-pressed="false">Purchases</button>
+            </div>
+          </div>
           <div class="chart" id="lineChart"></div>
           <details class="table-view">
             <summary>View as table</summary>

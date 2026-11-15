@@ -72,6 +72,59 @@
 
 .chart .hit { fill: transparent; cursor: crosshair; }
 
+/* ===== Chart card header + view toggle ===== */
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.card-head .card-title { margin-bottom: 0; }
+
+.segmented-sm button { padding: 0.25rem 0.7rem; font-size: 0.75rem; }
+
+/* ===== Purchases scatter ===== */
+.chart .pt {
+  fill: var(--utd-mint);
+  fill-opacity: 0.8;
+  stroke: #0b2a1f;
+  stroke-width: 1.5;
+  transition: r 0.1s ease;
+}
+
+.chart .pt.recurring { fill: var(--text); fill-opacity: 0.7; }
+
+.chart .pt.active,
+.chart .pt:focus {
+  r: 6.5;
+  fill-opacity: 1;
+  stroke: var(--text);
+  outline: none;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.chart-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: var(--utd-mint);
+}
+
+.chart-legend .recurring::before { background: var(--text); opacity: 0.7; }
+
 .chart-tooltip {
   position: fixed;
   z-index: 50;
@@ -89,6 +142,15 @@
 }
 
 .chart-tooltip strong { font-variant-numeric: tabular-nums; }
+
+.chart-tooltip .tip-desc {
+  display: inline-block;
+  max-width: 220px;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-style: italic;
+  white-space: normal;
+}
 
 .table-view {
   margin-top: 0.8rem;

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tooltip = $("tooltip");
 
   let range = "MONTH";
+  let view = "CUMULATIVE"; // or "PURCHASES"
   let [purchases, categories, budget, streak] = await Promise.all([
     api.getTransactions(),
     api.getCategories(),
@@ -22,6 +23,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("rangeControl")
       .querySelectorAll("button")
       .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    render();
+  });
+
+  // ----- Chart view toggle (cumulative line vs. individual purchases) -----
+  $("viewControl").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-view]");
+    if (!btn || btn.dataset.view === view) return;
+    view = btn.dataset.view;
+    $("viewControl")
+      .querySelectorAll("button")
+      .forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    hideTooltip();
     render();
   });
 
@@ -93,9 +106,135 @@ document.addEventListener("DOMContentLoaded", async () => {
     const showLimit =
       (range === "WEEK" && budget.period === "WEEKLY") || (range === "MONTH" && budget.period === "MONTHLY");
 
-    renderLine(days, start, end, showLimit ? Number(budget.limit_amount) : null);
+    if (view === "PURCHASES") {
+      $("lineTitle").textContent = "Individual purchases";
+      renderScatter(rows, start, end, catName);
+      renderPurchaseTable(rows, catName);
+    } else {
+      $("lineTitle").textContent = "Cumulative spending";
+      renderLine(days, start, end, showLimit ? Number(budget.limit_amount) : null);
+      renderTable(days);
+    }
     renderBars(ranked, running, catName);
-    renderTable(days);
+  }
+
+  // ----- Scatter: one dot per purchase (x = date, y = amount) -----
+  function renderScatter(rows, start, end, catName) {
+    const W = 560, H = 260;
+    const m = { l: 56, r: 16, t: 16, b: 30 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const totalDays = Math.round((end - start) / 86400000);
+
+    const maxY = Math.max(1, ...rows.map((r) => Number(r.amount))) * 1.1;
+    const step = niceStep(maxY / 4);
+    const yMax = Math.ceil(maxY / step) * step;
+    const x = (iso) => m.l + (totalDays ? ((parseISODate(iso) - start) / 86400000 / totalDays) * iw : iw / 2);
+    const y = (v) => m.t + ih - (v / yMax) * ih;
+
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Individual purchase amounts over time" });
+
+    const grid = el("g", { class: "grid" });
+    const axis = el("g", { class: "axis" });
+    for (let v = 0; v <= yMax + 0.01; v += step) {
+      if (v > 0) grid.append(el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }));
+      axis.append(text(m.l - 8, y(v) + 4, compactMoney(v), "end"));
+    }
+    const tickCount = Math.min(5, totalDays + 1);
+    for (let i = 0; i < tickCount; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + Math.round((i / Math.max(1, tickCount - 1)) * totalDays));
+      const iso = toISODate(d);
+      axis.append(text(x(iso), H - 8, formatDate(iso), i === 0 ? "start" : i === tickCount - 1 ? "end" : "middle"));
+    }
+    svg.append(grid, axis, el("line", { class: "baseline", x1: m.l, x2: W - m.r, y1: y(0), y2: y(0) }));
+
+    if (!rows.length) {
+      const msg = text(m.l + iw / 2, m.t + ih / 2, "No purchases in this range.", "middle");
+      msg.setAttribute("class", "axis");
+      msg.style.fill = "var(--muted)";
+      svg.append(msg);
+    }
+
+    // Draw larger purchases first so small ones stay on top and remain hoverable.
+    const points = [...rows]
+      .sort((a, b) => Number(b.amount) - Number(a.amount))
+      .map((r) => ({ r, cx: x(r.date), cy: y(Number(r.amount)) }));
+
+    const dots = el("g");
+    const hit = el("rect", { class: "hit", x: m.l, y: m.t, width: iw, height: ih });
+    svg.append(hit, dots);
+
+    let active = null;
+    const activate = (p) => {
+      if (active === p) return;
+      active?.node.classList.remove("active");
+      active = p;
+      if (!p) return hideTooltip();
+      p.node.classList.add("active");
+      const box = p.node.getBoundingClientRect();
+      showTooltip(box.left + box.width / 2, box.top, purchaseTip(p.r, catName));
+    };
+
+    for (const p of points) {
+      const c = el("circle", {
+        class: `pt${p.r.recurring ? " recurring" : ""}`,
+        cx: p.cx,
+        cy: p.cy,
+        r: 4.5,
+        tabindex: 0,
+        "aria-label": `${p.r.name}, ${formatMoney(p.r.amount)}, ${formatDate(p.r.date)}`,
+      });
+      c.addEventListener("focus", () => activate(p));
+      c.addEventListener("blur", () => activate(null));
+      p.node = c;
+      dots.append(c);
+    }
+
+    // Snap to the nearest purchase within a small radius, so tiny dots are easy to hover.
+    svg.addEventListener("pointermove", (e) => {
+      if (!points.length) return;
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const { x: px, y: py } = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let best = null, bestD = 18 * 18;
+      for (const p of points) {
+        const d = (p.cx - px) ** 2 + (p.cy - py) ** 2;
+        if (d <= bestD) { best = p; bestD = d; }
+      }
+      activate(best);
+    });
+    svg.addEventListener("pointerleave", () => activate(null));
+
+    const legend = document.createElement("div");
+    legend.className = "chart-legend";
+    legend.innerHTML = '<span>One-time</span><span class="recurring">Recurring</span>';
+
+    $("lineChart").replaceChildren(svg, legend);
+  }
+
+  function purchaseTip(r, catName) {
+    const lines = [
+      `<strong>${escapeHTML(r.name)}</strong>`,
+      `Amount: <strong>${formatMoney(r.amount)}</strong>`,
+      formatDate(r.date, { weekday: "short", month: "short", day: "numeric", year: "numeric" }),
+      `Category: ${escapeHTML(catName(r.category_ID))}`,
+    ];
+    if (r.recurring) lines.push("Recurring");
+    if (r.description) lines.push(`<span class="tip-desc">${escapeHTML(r.description)}</span>`);
+    return lines.join("<br>");
+  }
+
+  function renderPurchaseTable(rows, catName) {
+    const table = $("lineTable");
+    table.innerHTML = "<thead><tr><th>Date</th><th>Purchase</th><th>Category</th><th>Amount</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+    for (const r of [...rows].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${formatDate(r.date)}</td><td>${escapeHTML(r.name)}</td><td>${escapeHTML(catName(r.category_ID))}</td><td>${formatMoney(r.amount)}</td>`;
+      tbody.append(tr);
+    }
+    table.append(tbody);
   }
 
   // ----- Line chart: cumulative spend (single series, so no legend) -----
