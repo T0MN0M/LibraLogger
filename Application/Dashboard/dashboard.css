@@ -305,6 +305,14 @@
   color: var(--muted);
 }
 
+/* Fawaz Jamshed - UC 13 Spending Allowance (Req 8): allowance line under the period text, same muted look as .budget-period */
+.budget-allowance { margin: -0.4rem 0 1rem; text-align: center; }
+.budget-allowance p { margin: 0; }
+.allowance-amount { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+.allowance-amount:empty { display: none; }
+.allowance-detail { margin-top: 0.2rem; font-size: 0.8rem; color: var(--muted); }
+.budget-allowance[data-state="empty"] .allowance-detail { color: var(--status-critical); }
+
 /* Encouragement message at the bottom of the budget card: plain floating italic text */
 .budget-message {
   width: 100%;

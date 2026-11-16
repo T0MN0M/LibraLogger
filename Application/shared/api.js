@@ -120,6 +120,30 @@
     };
   }
 
+  // Fawaz Jamshed - UC 13 Spending Allowance (Req 8): pure function that turns a
+  // computeBudgetStatus() result into a per-day allowance:
+  //   allowance per day = remaining budget / days left in the period (counting today), rounded to cents.
+  // status == null means "no budget set" (no budgets row for the user), so no amount is shown.
+  // remaining <= 0 gives an allowance of 0 (never negative).
+  function computeSpendingAllowance(status) {
+    if (status == null) {
+      return {
+        has_budget: false,
+        allowance: null,
+        remaining: null,
+        days_left: null,
+        message: "Set a monthly budget to see your spending allowance.",
+      };
+    }
+    const remaining = Number(status.remaining);
+    const days_left = status.days_in_period - status.day_of_period + 1;
+    if (remaining <= 0) {
+      return { has_budget: true, allowance: 0, remaining, days_left, message: "You have reached your budget limit." };
+    }
+    const allowance = Math.round((remaining / days_left) * 100) / 100;
+    return { has_budget: true, allowance, remaining, days_left, message: null };
+  }
+
   // ------------------------------------------------------------------
   // Remote mode (Node.js server on Railway -> MySQL)
   // ------------------------------------------------------------------
@@ -482,6 +506,7 @@
     config: LIBRA_CONFIG,
     endpoints: ENDPOINTS,
     ...(LIBRA_CONFIG.mode === "remote" ? remote : mock),
-    util: { toISODate, parseISODate, periodRange, computeBudgetStatus, transactionsToCSV, formatMoney, formatDate },
+    // Fawaz Jamshed - UC 13 Spending Allowance (Req 8): expose computeSpendingAllowance next to computeBudgetStatus.
+    util: { toISODate, parseISODate, periodRange, computeBudgetStatus, computeSpendingAllowance, transactionsToCSV, formatMoney, formatDate },
   };
 })();

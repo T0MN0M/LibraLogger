@@ -48,6 +48,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       api.getStreak(),
     ]);
     renderBudget(status);
+    // Fawaz Jamshed - UC 13 Spending Allowance (Req 8): show the per-day allowance under the budget figures.
+    renderAllowance(status);
     renderRecent(recent, categories);
     renderProfile(profile, streak);
     renderBirthdayMessage(profile);
@@ -103,6 +105,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       `${formatDate(s.period_start)} – ${formatDate(s.period_end)} · day ${s.day_of_period} of ${s.days_in_period} this ${unit}`;
 
     renderMessage(100 - pct);
+  }
+
+  // Fawaz Jamshed - UC 13 Spending Allowance (Req 8): render the allowance line from computeSpendingAllowance().
+  // Normal: "$X per day" + "Based on $R remaining over N days." / used up: $0.00 + limit message /
+  // no budget: no amount, only the "Set a monthly budget..." message.
+  function renderAllowance(s) {
+    const a = api.util.computeSpendingAllowance(s);
+    const amountEl = $("allowanceAmount");
+    const detailEl = $("allowanceDetail");
+    $("budgetAllowance").dataset.state = !a.has_budget ? "none" : a.allowance === 0 ? "empty" : "ok";
+    amountEl.textContent = a.has_budget ? `Spending allowance: ${formatMoney(a.allowance)} per day` : "";
+    detailEl.textContent =
+      a.message ?? `Based on ${formatMoney(a.remaining)} remaining over ${a.days_left} ${a.days_left === 1 ? "day" : "days"}.`;
   }
 
   // ----- Center: encouragement message -----
