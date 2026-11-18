@@ -7,6 +7,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const auth = require("./backend/auth");
+const db = require("./db");
 
 const PORT = process.env.PORT || 3000; // Railway sets PORT automatically
 const ROOT = __dirname;
