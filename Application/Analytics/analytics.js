@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const goalForm = $("goalForm");
   const g = goalForm.elements;
   g.period.value = budget.period;
-  g.limit_amount.value = budget.limit_amount;
+  g.limit_amount.value = budget.limit_amount > 0 ? budget.limit_amount : ""; // empty for new accounts
   g.alert_threshold.value = budget.alert_threshold;
   $("goalStreak").textContent = streak?.weeks_under_budget ?? 0;
 
@@ -56,7 +56,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       status.textContent = "Enter a limit above $0 and an alert between 1% and 100%.";
       return;
     }
-    budget = await api.setBudget({ period: g.period.value, limit_amount: limit, alert_threshold: threshold });
+    try {
+      budget = await api.setBudget({ period: g.period.value, limit_amount: limit, alert_threshold: threshold });
+    } catch (err) {
+      console.error(err);
+      status.style.color = "var(--error)";
+      status.textContent = err.status ? err.message : "Couldn't save your budget. Please try again.";
+      return;
+    }
     status.style.color = "";
     status.textContent = `Saved: ${formatMoney(limit)} per ${budget.period === "WEEKLY" ? "week" : "month"}, alert at ${threshold}%.`;
     render();

@@ -1,7 +1,7 @@
 // Login page. Stars background comes from ../shared/stars.js.
 // Login -> Dashboard (sitemap: Login -> Users Homepage).
-// Mock mode accepts any credentials; in remote mode LibraAPI.login() calls
-// POST /api/auth/login and the server checks the password hash.
+// In remote mode LibraAPI.login() calls POST /api/auth/login: the server checks
+// the password hash and sets a session cookie. (Mock mode accepts anything.)
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("loginForm");
   const username = document.getElementById("username");
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (missing.length) {
       missing.forEach((el) => el.classList.add("invalid"));
       missing[0].focus();
-      say("Please enter your username and password.");
+      say("Please enter your email and password.");
       return;
     }
 
@@ -55,7 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "../Dashboard/dashboard.html";
     } catch (err) {
       console.error(err);
-      say("Login failed. Please check your username and password.");
+      // Server messages (err.status set) are safe to show, e.g. "Incorrect email or password."
+      say(err.status ? err.message : "Couldn't reach the server. Please try again.");
     }
   });
 

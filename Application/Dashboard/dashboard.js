@@ -102,6 +102,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("budgetPeriod").textContent =
       `${formatDate(s.period_start)} – ${formatDate(s.period_end)} · day ${s.day_of_period} of ${s.days_in_period} this ${unit}`;
 
+    // New accounts have no budget yet (limit 0): point them to the Goals form instead.
+    if (!(Number(s.limit_amount) > 0)) {
+      statusEl.querySelector(".status-text").textContent = "No budget set yet";
+      $("meterDesc").textContent = "No budget set yet";
+      const el = $("budgetMessage");
+      el.dataset.level = "";
+      el.textContent = "Set a budget on the Analytics page to start tracking your spending.";
+      return;
+    }
+
     renderMessage(100 - pct);
   }
 

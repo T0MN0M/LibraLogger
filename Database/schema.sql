@@ -5,6 +5,8 @@
 -- so rows can be returned to the frontend as-is.
 --
 -- Run on Railway:  mysql -h $MYSQLHOST -P $MYSQLPORT -u $MYSQLUSER -p$MYSQLPASSWORD $MYSQLDATABASE < schema.sql
+-- server.js also runs this file on every startup, so every statement must be
+-- safe to re-run (CREATE TABLE IF NOT EXISTS, seed inserts that skip existing rows).
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -18,6 +20,17 @@ CREATE TABLE IF NOT EXISTS users (
   hash_password  VARCHAR(255) NOT NULL,          -- bcrypt/argon2 hash, never plain text
   is_verified    BOOLEAN      NOT NULL DEFAULT FALSE,
   created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Login sessions. The browser holds a random token in an HttpOnly cookie;
+-- only its SHA-256 hash is stored here (see backend/sessions.js).
+CREATE TABLE IF NOT EXISTS sessions (
+  session_ID  CHAR(64) PRIMARY KEY,
+  user_ID     INT NOT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at  DATETIME NOT NULL,                  -- UTC
+  FOREIGN KEY (user_ID) REFERENCES users(user_ID) ON DELETE CASCADE,
+  INDEX idx_sessions_user (user_ID)
 );
 
 CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -135,3 +148,13 @@ INSERT INTO categories (category_ID, user_ID, name, is_default) VALUES
   (7, NULL, 'Housing', TRUE),
   (8, NULL, 'Other', TRUE)
 ON DUPLICATE KEY UPDATE name = VALUES(name);
+
+-- Shared student resources (same for every user). INSERT IGNORE keeps any edits
+-- made directly in the database.
+INSERT IGNORE INTO resources (resource_ID, resource_name, category, description, resource_link, resource_image) VALUES
+  (1, 'UTD Office of Financial Aid', 'Aid', 'Grants, loans, work-study and FAFSA help for Comets.', 'https://financialaid.utdallas.edu/', NULL),
+  (2, 'UTD Scholarships', 'Aid', 'Search and apply for university scholarships in one portal.', 'https://utdallas.academicworks.com/', NULL),
+  (3, 'Comet Cupboard', 'Food', 'Free food pantry for UTD students. (TODO: confirm official link)', 'https://www.utdallas.edu/', NULL),
+  (4, 'Federal Student Aid', 'Aid', 'File the FAFSA and manage federal student loans.', 'https://studentaid.gov/', NULL),
+  (5, 'CFPB — Budgeting Tools', 'Tips', 'Free worksheets for building a budget and tracking spending.', 'https://www.consumerfinance.gov/consumer-tools/', NULL),
+  (6, 'Student Discounts', 'Tips', 'Always ask for a student discount — show your Comet Card. (TODO: curate list)', 'https://www.utdallas.edu/', NULL);

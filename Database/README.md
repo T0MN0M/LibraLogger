@@ -9,24 +9,28 @@ The pages in `Application/` never touch the database directly. They all go throu
 
 | Mode | What it does |
 |------|--------------|
-| `mock` (current) | Sample data saved in the browser's `localStorage`. Just open the HTML files. |
-| `remote` | Calls a Node.js server (on Railway) over REST; the server queries MySQL. |
+| `remote` (current) | Calls the Node.js server (`server.js`) over REST; the server queries MySQL. |
+| `mock` | Sample data saved in the browser's `localStorage`. For opening the HTML files without a server. |
 
-Endpoints can also go live one at a time: any name in `LIBRA_CONFIG.remoteEndpoints` always
-uses the server, even in mock mode. **Registration (`register` → `POST /api/auth/register`) is
-already live this way.** It inserts a `users` row (password hashed with scrypt, see
-`backend/passwords.js`) and a matching `profiles` row with the birthday. Server routes are in
-`server.js` (`API_ROUTES`), with their logic in `backend/`.
+In remote mode every user has their own data:
 
-To go fully live, change `LIBRA_CONFIG.mode` to `"remote"` in `api.js` and build a server that
-implements the endpoints in the `ENDPOINTS` table at the top of that file
-(e.g. `GET /api/purchases`, `PUT /api/budget`). The JSON field names already match the
-column names in `schema.sql`, so the server can return rows as-is.
+- **Login** (`POST /api/auth/login`) checks the scrypt hash in `users.hash_password` and sets an
+  HttpOnly `libra_session` cookie. Only a SHA-256 hash of that token is stored, in the `sessions` table.
+- **Every data route** (`/api/purchases`, `/api/budget`, `/api/profile`, ...) reads the user from
+  the session cookie and only touches that user's rows. Requests without a valid session get a 401,
+  and `api.js` sends the browser to the login page.
+- **New accounts start empty.** Registration only creates the `users` and `profiles` rows, so a
+  new user has no purchases, no budget (the API returns `limit_amount: 0`) and a 0-week streak.
+  Categories and resources are shared by everyone.
+
+Server routes are listed in `server.js` (`API_ROUTES`), with their logic in `backend/`.
+The JSON field names match the column names in `schema.sql`.
 
 ## Setting up on Railway
 
 1. In the Railway project, add a **MySQL** service.
-2. Load the schema (Railway shows these variables on the MySQL service):
+2. Load the schema. `server.js` runs `schema.sql` automatically on every startup (every statement
+   in it is safe to re-run), or you can load it by hand (Railway shows these variables on the MySQL service):
    ```sh
    mysql -h $MYSQLHOST -P $MYSQLPORT -u $MYSQLUSER -p$MYSQLPASSWORD $MYSQLDATABASE < Database/schema.sql
    ```

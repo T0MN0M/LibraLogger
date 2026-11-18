@@ -1,68 +1,53 @@
-// Auth routes. Currently: POST /api/auth/register (email + password).
-// Validation mirrors Application/Registration_Page/registration.js, but the
-// server is the source of truth — never trust the browser's checks alone.
+// Auth routes: register, login, logout, change password.
+// Validation mirrors the browser pages, but the server is the source of truth —
+// never trust the browser's checks alone.
+//
+// Every handler takes a ctx from server.js: { req, body, query, params, user_ID, setCookie }.
 
-const { getPool } = require("./db");
-const { hashPassword } = require("./passwords");
+const { requirePool } = require("./db");
+const { hashPassword, verifyPassword } = require("./passwords");
+const sessions = require("./sessions");
+const { HttpError } = require("./errors");
+const { bad, str, isISODate, checkPassword } = require("./validate");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_MAX = 50; // per first / last name field
 const USER_NAME_MAX = 60; // users.user_name VARCHAR(60)
 const EMAIL_MAX = 255; // users.user_email VARCHAR(255)
 
-class HttpError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-}
-
-function isValidBirthday(s) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ""));
-  if (!m) return false;
-  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
-  const date = new Date(y, mo - 1, d);
-  const real = date.getFullYear() === y && date.getMonth() === mo - 1 && date.getDate() === d;
-  return real && y >= 1900 && date <= new Date();
-}
+const normalizeEmail = (v) => str(v).trim().toLowerCase();
 
 /** Returns { user_name, user_email, password, birthday } or throws HttpError(400). */
 function validateRegistration(body) {
-  if (!body || typeof body !== "object") throw new HttpError(400, "Invalid request.");
-  const str = (v) => (typeof v === "string" ? v : "");
-
   const first = str(body.first_name).trim();
   const last = str(body.last_name).trim();
-  const email = str(body.user_email).trim().toLowerCase();
+  const email = normalizeEmail(body.user_email);
   const password = str(body.password);
   const birthday = str(body.birthday);
 
-  if (!first) throw new HttpError(400, "First name is required.");
-  if (first.length > NAME_MAX) throw new HttpError(400, `First name must be ${NAME_MAX} characters or fewer.`);
-  if (!last) throw new HttpError(400, "Last name is required.");
-  if (last.length > NAME_MAX) throw new HttpError(400, `Last name must be ${NAME_MAX} characters or fewer.`);
+  if (!first) throw bad("First name is required.");
+  if (first.length > NAME_MAX) throw bad(`First name must be ${NAME_MAX} characters or fewer.`);
+  if (!last) throw bad("Last name is required.");
+  if (last.length > NAME_MAX) throw bad(`Last name must be ${NAME_MAX} characters or fewer.`);
   const user_name = `${first} ${last}`;
   if (user_name.length > USER_NAME_MAX)
-    throw new HttpError(400, `First and last name together must be ${USER_NAME_MAX - 1} characters or fewer.`);
+    throw bad(`First and last name together must be ${USER_NAME_MAX - 1} characters or fewer.`);
 
-  if (!EMAIL_RE.test(email) || email.length > EMAIL_MAX) throw new HttpError(400, "Enter a valid email address.");
-
-  if (password.length < 8) throw new HttpError(400, "Password must be at least 8 characters.");
-  if (password.length > 100) throw new HttpError(400, "Password must be no more than 100 characters.");
-  if (!/[A-Z]/.test(password)) throw new HttpError(400, "Password must contain at least one uppercase letter.");
-  if (!/[0-9]/.test(password)) throw new HttpError(400, "Password must contain at least one number.");
-
-  if (!isValidBirthday(birthday)) throw new HttpError(400, "Enter a valid date of birth.");
+  if (!EMAIL_RE.test(email) || email.length > EMAIL_MAX) throw bad("Enter a valid email address.");
+  checkPassword(password);
+  if (!isISODate(birthday, { notFuture: true })) throw bad("Enter a valid date of birth.");
 
   return { user_name, user_email: email, password, birthday };
 }
 
-/** Creates the users row + matching profiles row in one transaction. */
-async function register(body) {
+/**
+ * POST /api/auth/register
+ * Creates the users row + matching profiles row in one transaction. Nothing else:
+ * a new account starts with no purchases, no budget and no streak.
+ */
+async function register({ body }) {
   const data = validateRegistration(body);
-
-  const pool = getPool();
-  if (!pool) throw new HttpError(503, "Account creation is unavailable right now (database not configured).");
+  const pool = requirePool();
 
   const hash_password = await hashPassword(data.password);
   const conn = await pool.getConnection();
@@ -85,4 +70,54 @@ async function register(body) {
   }
 }
 
-module.exports = { register, validateRegistration, HttpError };
+// Used when the email doesn't exist, so a wrong email takes as long as a wrong
+// password (doesn't reveal which emails have accounts).
+let dummyHash = null;
+
+/** POST /api/auth/login  body: { user_email, password } */
+async function login({ req, body, setCookie }) {
+  const email = normalizeEmail(body.user_email);
+  const password = str(body.password);
+  if (!email || !password) throw bad("Please enter your email and password.");
+  const pool = requirePool();
+
+  const [rows] = await pool.execute("SELECT user_ID, hash_password FROM users WHERE user_email = ?", [email]);
+  const user = rows[0];
+  if (!user) {
+    dummyHash = dummyHash || (await hashPassword("not-a-real-password"));
+    await verifyPassword(password, dummyHash);
+  }
+  if (!user || !(await verifyPassword(password, user.hash_password))) {
+    throw new HttpError(401, "Incorrect email or password.");
+  }
+
+  setCookie(await sessions.createSession(pool, req, user.user_ID));
+  return { user_ID: user.user_ID };
+}
+
+/** POST /api/auth/logout */
+async function logout({ req, setCookie }) {
+  setCookie(await sessions.destroySession(requirePool(), req));
+  return null;
+}
+
+/** POST /api/auth/password  body: { current_password, new_password } */
+async function changePassword({ req, body, user_ID }) {
+  const current = str(body.current_password);
+  const next = str(body.new_password);
+  if (!current) throw bad("Enter your current password.");
+  checkPassword(next);
+  if (next === current) throw bad("New password must be different from your current one.");
+
+  const pool = requirePool();
+  const [rows] = await pool.execute("SELECT hash_password FROM users WHERE user_ID = ?", [user_ID]);
+  // 400 (not 401) so the page doesn't treat it as "logged out".
+  if (!rows.length || !(await verifyPassword(current, rows[0].hash_password)))
+    throw bad("Your current password is incorrect.");
+
+  await pool.execute("UPDATE users SET hash_password = ? WHERE user_ID = ?", [await hashPassword(next), user_ID]);
+  await sessions.destroyOtherSessions(pool, req, user_ID);
+  return null;
+}
+
+module.exports = { register, login, logout, changePassword, validateRegistration, HttpError };

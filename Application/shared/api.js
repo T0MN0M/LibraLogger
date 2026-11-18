@@ -1,15 +1,12 @@
 /* =====================================================================
    Libra Logger — data access layer (window.LibraAPI)
 
-   Every page talks to data ONLY through this file. Right now it runs in
-   "mock" mode (sample data saved in the browser's localStorage) so the
-   pages work by just opening the HTML files.
-
-   When the Node.js + MySQL backend is deployed on Railway:
-     1. Set LIBRA_CONFIG.mode = "remote"
-     2. Set LIBRA_CONFIG.baseUrl to the Railway service URL
-        (or leave "" if the server also serves these HTML files)
-     3. Implement the REST endpoints listed in ENDPOINTS below.
+   Every page talks to data ONLY through this file. Two modes:
+     "remote" (default) — calls the Node.js server (server.js), which reads
+        and writes the logged-in user's rows in MySQL. Each user only ever
+        sees their own data; new accounts start empty.
+     "mock" — sample data saved in the browser's localStorage, for opening
+        the HTML files directly without a server or database.
 
    Field names are the MySQL column names from Database/schema.sql
    (user_ID, purchase_ID, amount, category_ID, ...), so JSON rows from the
@@ -18,12 +15,12 @@
    ===================================================================== */
 (function () {
   const LIBRA_CONFIG = {
-    mode: "mock", // "mock" | "remote"
-    baseUrl: "", // e.g. "https://libra-logger-production.up.railway.app"
+    mode: "remote", // "remote" | "mock"
+    baseUrl: "", // "" = same server that serves these pages
     appVersion: "0.1.0",
-    // Endpoints that always use the server, even in "mock" mode. Lets features go
-    // live one at a time as their backend routes are built (see server.js API_ROUTES).
+    // Endpoints that always use the server, even in "mock" mode.
     remoteEndpoints: ["register"],
+    loginPage: "/Application/Login_Page/login.html", // where logged-out users are sent
   };
 
   // REST endpoints the backend should expose (remote mode).
@@ -36,7 +33,8 @@
     changePassword: ["POST", "/api/auth/password"], // body: { current_password, new_password }
     getBudget: ["GET", "/api/budget"],
     setBudget: ["PUT", "/api/budget"],
-    getBudgetStatus: ["GET", "/api/budget/status"],
+    // getBudgetStatus: no endpoint — computed in the browser from getBudget + getTransactions
+    // so the budget period follows the user's local date.
     getTransactions: ["GET", "/api/purchases"],
     addTransaction: ["POST", "/api/purchases"],
     editTransaction: ["PATCH", "/api/purchases/:id"],
@@ -142,6 +140,12 @@
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     });
+    // Not logged in (or session expired): send the user to the login page.
+    // login/logout handle their own 401s.
+    if (res.status === 401 && name !== "login" && name !== "logout") {
+      window.location.href = LIBRA_CONFIG.loginPage;
+      return new Promise(() => {}); // page is navigating away; don't run the caller's error path
+    }
     if (!res.ok) {
       // Server errors come back as { error: "message safe to show the user" }
       const data = await res.json().catch(() => null);
@@ -487,7 +491,12 @@
       http("changePassword", { body: { current_password, new_password } }),
     getBudget: () => http("getBudget"),
     setBudget: (fields) => http("setBudget", { body: fields }),
-    getBudgetStatus: () => http("getBudgetStatus"),
+    async getBudgetStatus() {
+      const budget = await remote.getBudget();
+      const { start } = periodRange(budget.period);
+      const purchases = await remote.getTransactions({ from: toISODate(start) });
+      return computeBudgetStatus(budget, purchases);
+    },
     getTransactions: (query = {}) => http("getTransactions", { query }),
     addTransaction: (data) => http("addTransaction", { body: data }),
     editTransaction: (id, fields) => http("editTransaction", { id, body: fields }),
