@@ -14,6 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
     message.classList.toggle("info", isInfo);
   };
 
+  // Coming from the Registration page after creating an account
+  if (new URLSearchParams(window.location.search).get("registered") === "1") {
+    say("Account created! Log in with your email and password.", true);
+  }
+
   // ----- Show / hide password -----
   toggle.addEventListener("click", () => {
     const show = password.type === "password";

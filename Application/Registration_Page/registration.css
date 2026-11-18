@@ -238,6 +238,8 @@ input.invalid { border-color: var(--error); }
 
 .btn-primary:hover { background: var(--utd-orange-dark); }
 
+.btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
+
 .btn-google {
   font-family: var(--font-body);
   font-weight: 600;

@@ -21,10 +21,14 @@
     mode: "mock", // "mock" | "remote"
     baseUrl: "", // e.g. "https://libra-logger-production.up.railway.app"
     appVersion: "0.1.0",
+    // Endpoints that always use the server, even in "mock" mode. Lets features go
+    // live one at a time as their backend routes are built (see server.js API_ROUTES).
+    remoteEndpoints: ["register"],
   };
 
   // REST endpoints the backend should expose (remote mode).
   const ENDPOINTS = {
+    register: ["POST", "/api/auth/register"], // body: { first_name, last_name, user_email, password, birthday }
     login: ["POST", "/api/auth/login"],
     logout: ["POST", "/api/auth/logout"],
     getProfile: ["GET", "/api/profile"],
@@ -138,7 +142,13 @@
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (!res.ok) throw new Error(`${method} ${pathTemplate} failed (${res.status})`);
+    if (!res.ok) {
+      // Server errors come back as { error: "message safe to show the user" }
+      const data = await res.json().catch(() => null);
+      const err = new Error(data?.error || `${method} ${pathTemplate} failed (${res.status})`);
+      err.status = res.status;
+      throw err;
+    }
     return res.status === 204 ? null : res.json();
   }
 
@@ -297,6 +307,39 @@
   const byNewest = (a, b) => (a.date === b.date ? b.purchase_ID - a.purchase_ID : a.date < b.date ? 1 : -1);
 
   const mock = {
+    async register({ first_name, last_name, user_email, birthday /*, password */ }) {
+      // Mock: passwords aren't stored in the browser. Remote: server hashes into users.hash_password.
+      const db = load();
+      const email = String(user_email).trim().toLowerCase();
+      if (db.users.some((u) => u.user_email.toLowerCase() === email)) {
+        const err = new Error("An account with that email already exists.");
+        err.status = 409;
+        throw err;
+      }
+      const user_ID = db.users.reduce((m, u) => Math.max(m, u.user_ID), 0) + 1;
+      const user = {
+        user_ID,
+        user_name: `${first_name.trim()} ${last_name.trim()}`,
+        user_email: email,
+        is_verified: false,
+        created_at: toISODate(new Date()),
+      };
+      db.users.push(user);
+      db.profiles.push({
+        profile_ID: db.profiles.reduce((m, p) => Math.max(m, p.profile_ID), 0) + 1,
+        user_ID,
+        nickname: "",
+        birthday,
+        profile_picture: null,
+        profile_icon: "comet",
+        profile_color: "#5fe0b7",
+        profile_border: "#e87500",
+        status_2FA: false,
+      });
+      save(db);
+      return { user_ID, user_name: user.user_name, user_email: email };
+    },
+
     async login(user_email /*, password */) {
       // TODO(remote): real check happens on the server (hash_password).
       const db = load();
@@ -435,6 +478,7 @@
   };
 
   const remote = {
+    register: (data) => http("register", { body: data }),
     login: (user_email, password) => http("login", { body: { user_email, password } }),
     logout: () => http("logout"),
     getProfile: () => http("getProfile"),
@@ -482,6 +526,7 @@
     config: LIBRA_CONFIG,
     endpoints: ENDPOINTS,
     ...(LIBRA_CONFIG.mode === "remote" ? remote : mock),
+    ...Object.fromEntries(LIBRA_CONFIG.remoteEndpoints.map((name) => [name, remote[name]])),
     util: { toISODate, parseISODate, periodRange, computeBudgetStatus, transactionsToCSV, formatMoney, formatDate },
   };
 })();

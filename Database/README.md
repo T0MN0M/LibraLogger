@@ -12,7 +12,13 @@ The pages in `Application/` never touch the database directly. They all go throu
 | `mock` (current) | Sample data saved in the browser's `localStorage`. Just open the HTML files. |
 | `remote` | Calls a Node.js server (on Railway) over REST; the server queries MySQL. |
 
-To go live, change `LIBRA_CONFIG.mode` to `"remote"` in `api.js` and build a server that
+Endpoints can also go live one at a time: any name in `LIBRA_CONFIG.remoteEndpoints` always
+uses the server, even in mock mode. **Registration (`register` → `POST /api/auth/register`) is
+already live this way.** It inserts a `users` row (password hashed with scrypt, see
+`backend/passwords.js`) and a matching `profiles` row with the birthday. Server routes are in
+`server.js` (`API_ROUTES`), with their logic in `backend/`.
+
+To go fully live, change `LIBRA_CONFIG.mode` to `"remote"` in `api.js` and build a server that
 implements the endpoints in the `ENDPOINTS` table at the top of that file
 (e.g. `GET /api/purchases`, `PUT /api/budget`). The JSON field names already match the
 column names in `schema.sql`, so the server can return rows as-is.

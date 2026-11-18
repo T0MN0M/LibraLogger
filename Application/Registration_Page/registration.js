@@ -31,8 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("input", () => input.classList.remove("invalid"))
   );
 
-  // ----- Validation (front-end only; no database yet) -----
-  form.addEventListener("submit", (e) => {
+  // ----- Validate, then create the account (POST /api/auth/register via LibraAPI) -----
+  // The server repeats every check below; these are just for quick feedback.
+  const submitBtn = form.querySelector('button[type="submit"]');
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     form.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
     message.classList.remove("success");
@@ -51,6 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (first.value.trim().length > 50) fail(first, "First name must be less than 50 characters.");
     if (!last.value.trim()) fail(last, "Last name is required.");
     else if (last.value.trim().length > 50) fail(last, "Last name must be less than 50 characters.");
+    if (first.value.trim() && last.value.trim() && `${first.value.trim()} ${last.value.trim()}`.length > 60) {
+      fail(first, "First and last name together must be 59 characters or fewer.");
+      last.classList.add("invalid");
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) fail(email, "Enter a valid email address.");
     if (password.value.length < 8) fail(password, "Password must be at least 8 characters.");
     if (password.value.length > 100) fail(password, "Password must be no more than 100 characters.");
@@ -67,16 +73,31 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // TODO: send to backend once the database is connected
     const data = {
-      firstName: first.value.trim(),
-      lastName: last.value.trim(),
-      email: email.value.trim(),
-      dob: `${year.value}-${month.value.padStart(2, "0")}-${day.value.padStart(2, "0")}`,
+      first_name: first.value.trim(),
+      last_name: last.value.trim(),
+      user_email: email.value.trim(),
+      password: password.value,
+      birthday: `${year.value}-${month.value.padStart(2, "0")}-${day.value.padStart(2, "0")}`,
     };
-    console.log("Registration data (not submitted yet):", data);
-    message.textContent = "Looks good! (Account creation not connected yet.)";
-    message.classList.add("success");
+
+    submitBtn.disabled = true;
+    message.textContent = "Creating your account...";
+    try {
+      await window.LibraAPI.register(data);
+      message.textContent = "Account created! Taking you to the login page...";
+      message.classList.add("success");
+      form.reset();
+      setTimeout(() => {
+        window.location.href = "../Login_Page/login.html?registered=1";
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      if (err.status === 409) email.classList.add("invalid");
+      // Server messages (err.status set) are safe to show; network failures are not.
+      message.textContent = err.status ? err.message : "Couldn't reach the server. Please try again.";
+      submitBtn.disabled = false;
+    }
   });
 
   // ----- Google sign-up placeholder -----
