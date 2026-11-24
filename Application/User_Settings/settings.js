@@ -101,7 +101,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ----- 2FA (enable_2FA / disable_2FA) -----
+  // Turning on: "Yes" emails a code (step 1), entering that code turns 2FA on (step 2).
+  // After that, every login asks for a new emailed code (see Login_Page/login.js).
+  const stepConfirm = $("twofaStepConfirm");
+  const stepCode = $("twofaStepCode");
+  const codeInput = $("twofaCode");
+  const codeError = $("twofaError");
+  const sendError = $("twofaSendError");
+  const resendBtn = $("twofaResend");
+
+  const showCodeStep = (emailHint) => {
+    if (emailHint) $("twofaEmail").textContent = emailHint;
+    stepConfirm.hidden = true;
+    stepCode.hidden = false;
+    $("twofaTitle").textContent = "Enter Code";
+    codeInput.focus();
+  };
+
   const openModal = () => {
+    stepConfirm.hidden = false;
+    stepCode.hidden = true;
+    stepCode.reset();
+    sendError.textContent = "";
+    codeError.textContent = "";
+    codeInput.classList.remove("invalid");
+    $("twofaTitle").textContent = "Confirm 2FA";
     modal.hidden = false;
     confirmBtn.focus();
   };
@@ -113,9 +137,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   toggle2fa.addEventListener("click", async () => {
     if (!profile.status_2FA) return openModal();
     if (!confirm("Turn off Two-Factor Authentication?")) return;
-    profile = await api.updateProfile({ status_2FA: false });
-    renderProfile();
-    say("2FA disabled.");
+    try {
+      await api.disable2FA();
+      profile = await api.getProfile();
+      renderProfile();
+      say("2FA disabled.");
+    } catch (err) {
+      console.error(err);
+      say(err.status ? err.message : "Couldn't turn off 2FA. Please try again.", true);
+    }
   });
   closeBtn.addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => {
@@ -126,12 +156,74 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!modal.hidden) closeModal();
     else if (!pwModal.hidden) closePasswordModal();
   });
+
+  // Step 1: "Yes" -> email a code.
   confirmBtn.addEventListener("click", async () => {
-    // TODO: backend sends the 2FA test email (VerificationToken type SMS_2FA / EMAIL)
-    profile = await api.updateProfile({ status_2FA: true });
-    closeModal();
-    renderProfile();
-    say("2FA enabled. (Test email will be sent once the email service is connected.)");
+    confirmBtn.disabled = true;
+    sendError.textContent = "";
+    try {
+      const { email_hint } = await api.start2FAEnable();
+      showCodeStep(email_hint);
+    } catch (err) {
+      console.error(err);
+      // 429 = a code was sent moments ago; it's still valid, so go straight to entering it.
+      if (err.status === 429) {
+        showCodeStep();
+        codeError.textContent = err.message;
+      } else {
+        sendError.textContent = err.status ? err.message : "Couldn't send the code. Please try again.";
+      }
+    } finally {
+      confirmBtn.disabled = false;
+    }
+  });
+
+  // Step 2: enter the code -> 2FA on.
+  codeInput.addEventListener("input", () => {
+    codeInput.value = codeInput.value.replace(/[^\d ]/g, "");
+    codeInput.classList.remove("invalid");
+    codeError.textContent = "";
+  });
+
+  stepCode.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = codeInput.value.replace(/\s/g, "");
+    if (!/^\d{6}$/.test(code)) {
+      codeInput.classList.add("invalid");
+      codeError.textContent = "Enter the 6-digit code from your email.";
+      return codeInput.focus();
+    }
+    const submitBtn = stepCode.querySelector('[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+      await api.confirm2FAEnable(code);
+      profile = await api.getProfile();
+      closeModal();
+      renderProfile();
+      say("2FA enabled. You'll be asked for an emailed code each time you log in.");
+    } catch (err) {
+      console.error(err);
+      codeInput.classList.add("invalid");
+      codeInput.select();
+      codeError.textContent = err.status ? err.message : "Couldn't check the code. Please try again.";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  resendBtn.addEventListener("click", async () => {
+    resendBtn.disabled = true;
+    codeError.textContent = "";
+    try {
+      const { email_hint } = await api.start2FAEnable();
+      showCodeStep(email_hint);
+      codeInput.value = "";
+    } catch (err) {
+      console.error(err);
+      codeError.textContent = err.status ? err.message : "Couldn't send a new code. Please try again.";
+    } finally {
+      resendBtn.disabled = false;
+    }
   });
 
   // ----- Change password -----

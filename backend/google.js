@@ -19,6 +19,7 @@
 const crypto = require("crypto");
 const { requirePool } = require("./db");
 const sessions = require("./sessions");
+const twofa = require("./twofa");
 const { HttpError } = require("./errors");
 
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -201,6 +202,12 @@ async function callback({ req, query, setCookie, redirect }) {
     const pool = requirePool();
     const claims = await exchangeCode(cfg, String(query.code));
     const user_ID = await findOrCreateUser(pool, claims);
+    // 2FA on: email a code and let the Login page ask for it (see backend/twofa.js).
+    if (await twofa.isEnabled(pool, user_ID)) {
+      const { cookie } = await twofa.startLogin(pool, req, user_ID);
+      setCookie(cookie);
+      return redirect(`${LOGIN_PAGE}?twofa=1`);
+    }
     setCookie(await sessions.createSession(pool, req, user_ID));
     return redirect(DASHBOARD_PAGE);
   } catch (err) {

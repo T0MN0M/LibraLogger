@@ -78,7 +78,7 @@ const PROFILE_FIELDS = {
     if (!HEX_COLOR.test(str(v))) throw bad("Invalid color.");
     return v;
   }],
-  status_2FA: ["profiles", (v) => Boolean(v)],
+  // status_2FA isn't here on purpose: turning 2FA on needs an emailed code (backend/twofa.js).
 };
 
 async function updateProfile(ctx) {

@@ -7,6 +7,7 @@
 const { requirePool } = require("./db");
 const { hashPassword, verifyPassword } = require("./passwords");
 const sessions = require("./sessions");
+const twofa = require("./twofa");
 const { isPasswordless } = require("./google");
 const { HttpError } = require("./errors");
 const { bad, str, isISODate, checkPassword } = require("./validate");
@@ -75,7 +76,11 @@ async function register({ body }) {
 // password (doesn't reveal which emails have accounts).
 let dummyHash = null;
 
-/** POST /api/auth/login  body: { user_email, password } */
+/**
+ * POST /api/auth/login  body: { user_email, password }
+ * Returns { user_ID } with a session cookie, or { two_factor_required, email_hint }
+ * (no session) when the account has 2FA on.
+ */
 async function login({ req, body, setCookie }) {
   const email = normalizeEmail(body.user_email);
   const password = str(body.password);
@@ -90,6 +95,13 @@ async function login({ req, body, setCookie }) {
   }
   if (!user || !(await verifyPassword(password, user.hash_password))) {
     throw new HttpError(401, "Incorrect email or password.");
+  }
+
+  // 2FA on: no session yet. Email a code; the page sends it to POST /api/auth/2fa/verify.
+  if (await twofa.isEnabled(pool, user.user_ID)) {
+    const { cookie, email_hint } = await twofa.startLogin(pool, req, user.user_ID);
+    setCookie(cookie);
+    return { two_factor_required: true, email_hint };
   }
 
   setCookie(await sessions.createSession(pool, req, user.user_ID));

@@ -374,6 +374,42 @@ h1 {
   color: var(--error);
 }
 
+/* ===== 2FA code step ===== */
+.modal [hidden] { display: none !important; }
+
+.code-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.code-form p { margin-bottom: 0.3rem; }
+
+.code-input {
+  width: 100%;
+  padding: 0.6rem;
+  font: inherit;
+  font-size: 1.5rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.code-input:focus { outline: none; border-color: var(--utd-mint); }
+.code-input.invalid { border-color: var(--error); }
+
+.modal .code-resend {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+#twofaStepConfirm .pw-error { margin-bottom: 0.6rem; }
+#twofaStepConfirm .pw-error:empty { display: none; }
+
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes pop-in { from { opacity: 0; transform: scale(0.94); } }
 

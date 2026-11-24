@@ -55,6 +55,24 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
   FOREIGN KEY (user_ID) REFERENCES users(user_ID) ON DELETE CASCADE
 );
 
+-- One-time 6-digit codes emailed for two-factor authentication (see backend/twofa.js).
+--   ENABLE: proves the user can receive email before profiles.status_2FA is turned on.
+--   LOGIN:  second step of logging in when status_2FA is on. challenge_ID is the SHA-256
+--           of a random token held in the browser's HttpOnly libra_2fa cookie.
+-- Only a hash of the code is stored. All times are UTC.
+CREATE TABLE IF NOT EXISTS two_factor_codes (
+  challenge_ID  CHAR(64) PRIMARY KEY,
+  user_ID       INT NOT NULL,
+  purpose       ENUM('ENABLE', 'LOGIN') NOT NULL,
+  code_hash     CHAR(64) NOT NULL,
+  attempts      TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  created_at    DATETIME NOT NULL,
+  sent_at       DATETIME NOT NULL,                -- last time the code was (re)sent
+  expires_at    DATETIME NOT NULL,
+  FOREIGN KEY (user_ID) REFERENCES users(user_ID) ON DELETE CASCADE,
+  INDEX idx_2fa_user (user_ID, purpose)
+);
+
 -- "User Settings" table in the Component Diagram
 CREATE TABLE IF NOT EXISTS profiles (
   profile_ID       INT AUTO_INCREMENT PRIMARY KEY,

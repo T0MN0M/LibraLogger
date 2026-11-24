@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const auth = require("./backend/auth");
 const google = require("./backend/google");
+const twofa = require("./backend/twofa");
 const data = require("./backend/data");
 const sessions = require("./backend/sessions");
 const { getPool, ensureSchema } = require("./backend/db");
@@ -87,6 +88,11 @@ const API_ROUTES = [
   ["GET", "/api/auth/google", google.start, { public: true }],
   ["GET", "/api/auth/google/callback", google.callback, { public: true }],
   ["POST", "/api/auth/password", auth.changePassword],
+  ["POST", "/api/auth/2fa/verify", twofa.verifyLogin, { public: true }], // uses the libra_2fa cookie
+  ["POST", "/api/auth/2fa/resend", twofa.resendLogin, { public: true }],
+  ["POST", "/api/auth/2fa/enable", twofa.startEnable],
+  ["POST", "/api/auth/2fa/enable/confirm", twofa.confirmEnable],
+  ["POST", "/api/auth/2fa/disable", twofa.disable],
   ["GET", "/api/profile", data.getProfile],
   ["PATCH", "/api/profile", data.updateProfile],
   ["GET", "/api/budget", data.getBudget],

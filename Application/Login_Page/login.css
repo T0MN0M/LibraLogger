@@ -127,6 +127,38 @@ h1 {
 
 .form-message.info { color: var(--utd-mint); }
 
+/* ===== 2FA code step ===== */
+#twofaForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-align: left;
+}
+
+#loginForm[hidden],
+.login-card [hidden] { display: none !important; }
+
+.twofa-intro {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--muted);
+}
+
+.twofa-intro strong { color: var(--utd-orange); }
+
+.login-field input.code-input {
+  font-size: 1.5rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+.twofa-links {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
 /* ===== Buttons ===== */
 .login-card .btn {
   width: 100%;

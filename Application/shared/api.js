@@ -26,7 +26,12 @@
   // REST endpoints the backend should expose (remote mode).
   const ENDPOINTS = {
     register: ["POST", "/api/auth/register"], // body: { first_name, last_name, user_email, password, birthday }
-    login: ["POST", "/api/auth/login"],
+    login: ["POST", "/api/auth/login"], // -> { user_ID } or { two_factor_required, email_hint }
+    verifyLogin2FA: ["POST", "/api/auth/2fa/verify"], // body: { code }; finishes a 2FA login
+    resendLogin2FA: ["POST", "/api/auth/2fa/resend"],
+    start2FAEnable: ["POST", "/api/auth/2fa/enable"], // emails a setup code
+    confirm2FAEnable: ["POST", "/api/auth/2fa/enable/confirm"], // body: { code }
+    disable2FA: ["POST", "/api/auth/2fa/disable"],
     logout: ["POST", "/api/auth/logout"],
     getProfile: ["GET", "/api/profile"],
     updateProfile: ["PATCH", "/api/profile"],
@@ -125,6 +130,8 @@
   // ------------------------------------------------------------------
   // Remote mode (Node.js server on Railway -> MySQL)
   // ------------------------------------------------------------------
+  const LOGIN_PAGE_ENDPOINTS = ["login", "logout", "verifyLogin2FA", "resendLogin2FA"];
+
   async function http(name, { id, body, query } = {}) {
     const [method, pathTemplate] = ENDPOINTS[name];
     let url = LIBRA_CONFIG.baseUrl + pathTemplate.replace(":id", encodeURIComponent(id));
@@ -141,8 +148,8 @@
       body: body ? JSON.stringify(body) : undefined,
     });
     // Not logged in (or session expired): send the user to the login page.
-    // login/logout handle their own 401s.
-    if (res.status === 401 && name !== "login" && name !== "logout") {
+    // The login-page endpoints handle their own 401s.
+    if (res.status === 401 && !LOGIN_PAGE_ENDPOINTS.includes(name)) {
       window.location.href = LIBRA_CONFIG.loginPage;
       return new Promise(() => {}); // page is navigating away; don't run the caller's error path
     }
@@ -357,6 +364,30 @@
       return null;
     },
 
+    // Mock: no emails are sent, so 2FA login is never required and any 6-digit code works.
+    async verifyLogin2FA() {
+      return { user_ID: currentUserId() };
+    },
+    async resendLogin2FA() {
+      return { email_hint: "your email" };
+    },
+    async start2FAEnable() {
+      return { email_hint: "your email (mock mode: any 6 digits work)", expires_in_minutes: 10 };
+    },
+    async confirm2FAEnable(code) {
+      if (!/^\d{6}$/.test(String(code).replace(/[\s-]/g, ""))) {
+        const err = new Error("Enter the 6-digit code from your email.");
+        err.status = 400;
+        throw err;
+      }
+      await mock.updateProfile({ status_2FA: true });
+      return { status_2FA: true };
+    },
+    async disable2FA() {
+      await mock.updateProfile({ status_2FA: false });
+      return { status_2FA: false };
+    },
+
     async getProfile() {
       const db = load();
       const uid = currentUserId();
@@ -485,6 +516,11 @@
     register: (data) => http("register", { body: data }),
     login: (user_email, password) => http("login", { body: { user_email, password } }),
     logout: () => http("logout"),
+    verifyLogin2FA: (code) => http("verifyLogin2FA", { body: { code } }),
+    resendLogin2FA: () => http("resendLogin2FA"),
+    start2FAEnable: () => http("start2FAEnable"),
+    confirm2FAEnable: (code) => http("confirm2FAEnable", { body: { code } }),
+    disable2FA: () => http("disable2FA"),
     getProfile: () => http("getProfile"),
     updateProfile: (fields) => http("updateProfile", { body: fields }),
     changePassword: (current_password, new_password) =>

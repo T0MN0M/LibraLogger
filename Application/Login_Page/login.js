@@ -54,7 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      await window.LibraAPI.login(user, password.value);
+      const result = await window.LibraAPI.login(user, password.value);
+      // 2FA on: the server emailed a code instead of logging in.
+      if (result && result.two_factor_required) return showCodeStep(result.email_hint);
       window.location.href = "../Dashboard/dashboard.html";
     } catch (err) {
       console.error(err);
@@ -62,6 +64,92 @@ document.addEventListener("DOMContentLoaded", () => {
       say(err.status ? err.message : "Couldn't reach the server. Please try again.");
     }
   });
+
+  // ----- 2FA: enter the code emailed after the password (or Google) check -----
+  const twofaForm = document.getElementById("twofaForm");
+  const codeInput = document.getElementById("twofaCode");
+  const twofaMessage = document.getElementById("twofaMessage");
+  const resendBtn = document.getElementById("twofaResend");
+  // Things that belong to the password step and are hidden during the code step.
+  const passwordStep = [form, document.querySelector(".divider"), document.getElementById("googleLogin"), document.querySelector(".switch-link")];
+
+  const sayCode = (text, isInfo = false) => {
+    twofaMessage.textContent = text;
+    twofaMessage.classList.toggle("info", isInfo);
+  };
+
+  function showCodeStep(emailHint) {
+    if (emailHint) document.getElementById("twofaEmail").textContent = emailHint;
+    passwordStep.forEach((el) => el && (el.hidden = true));
+    twofaForm.hidden = false;
+    twofaForm.reset();
+    sayCode("");
+    codeInput.focus();
+  }
+
+  function showPasswordStep(text) {
+    twofaForm.hidden = true;
+    passwordStep.forEach((el) => el && (el.hidden = false));
+    password.value = "";
+    say(text || "");
+    (username.value ? password : username).focus();
+  }
+
+  // Coming back from Google sign-in with 2FA on.
+  if (params.get("twofa") === "1") {
+    history.replaceState(null, "", window.location.pathname);
+    showCodeStep();
+  }
+
+  codeInput.addEventListener("input", () => {
+    codeInput.value = codeInput.value.replace(/[^\d ]/g, "");
+    codeInput.classList.remove("invalid");
+    sayCode("");
+  });
+
+  twofaForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = codeInput.value.replace(/\s/g, "");
+    if (!/^\d{6}$/.test(code)) {
+      codeInput.classList.add("invalid");
+      codeInput.focus();
+      return sayCode("Enter the 6-digit code from your email.");
+    }
+    const submitBtn = twofaForm.querySelector('[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+      await window.LibraAPI.verifyLogin2FA(code);
+      window.location.href = "../Dashboard/dashboard.html";
+    } catch (err) {
+      console.error(err);
+      // 401 = this login attempt expired or ran out of tries: start over.
+      if (err.status === 401) return showPasswordStep(err.message);
+      codeInput.classList.add("invalid");
+      codeInput.select();
+      sayCode(err.status ? err.message : "Couldn't reach the server. Please try again.");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  resendBtn.addEventListener("click", async () => {
+    resendBtn.disabled = true;
+    try {
+      const { email_hint } = await window.LibraAPI.resendLogin2FA();
+      if (email_hint) document.getElementById("twofaEmail").textContent = email_hint;
+      codeInput.value = "";
+      codeInput.focus();
+      sayCode("A new code is on its way.", true);
+    } catch (err) {
+      console.error(err);
+      if (err.status === 401) return showPasswordStep(err.message);
+      sayCode(err.status ? err.message : "Couldn't reach the server. Please try again.");
+    } finally {
+      resendBtn.disabled = false;
+    }
+  });
+
+  document.getElementById("twofaBack").addEventListener("click", () => showPasswordStep());
 
   // ----- Placeholder (needs the email service) -----
   document.getElementById("forgotPassword").addEventListener("click", () => {
