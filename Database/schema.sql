@@ -33,6 +33,19 @@ CREATE TABLE IF NOT EXISTS sessions (
   INDEX idx_sessions_user (user_ID)
 );
 
+-- External logins ("Sign in with Google"). provider_sub is the provider's stable
+-- user ID (Google's `sub` claim) — emails can change, this can't.
+-- Accounts created through Google store '!google' in users.hash_password (no password).
+CREATE TABLE IF NOT EXISTS oauth_accounts (
+  provider      VARCHAR(20)  NOT NULL,           -- 'google'
+  provider_sub  VARCHAR(255) NOT NULL,
+  user_ID       INT NOT NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (provider, provider_sub),
+  FOREIGN KEY (user_ID) REFERENCES users(user_ID) ON DELETE CASCADE,
+  INDEX idx_oauth_user (user_ID)
+);
+
 CREATE TABLE IF NOT EXISTS verification_tokens (
   token_ID    INT AUTO_INCREMENT PRIMARY KEY,
   user_ID     INT NOT NULL,

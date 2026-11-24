@@ -15,9 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Coming from the Registration page after creating an account
-  if (new URLSearchParams(window.location.search).get("registered") === "1") {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("registered") === "1") {
     say("Account created! Log in with your email and password.", true);
   }
+  // The server sends us back here with ?google_error=... if Google sign-in failed
+  if (params.get("google_error")) say(params.get("google_error"));
 
   // ----- Show / hide password -----
   toggle.addEventListener("click", () => {
@@ -60,14 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ----- Placeholders (need the email service / Google OAuth) -----
+  // ----- Placeholder (needs the email service) -----
   document.getElementById("forgotPassword").addEventListener("click", () => {
     // TODO: send a reset email (VerificationToken type EMAIL)
     say("Password reset is not connected yet.", true);
   });
 
+  // ----- Google: the server handles the whole OAuth flow (backend/google.js) -----
   document.getElementById("googleLogin").addEventListener("click", () => {
-    // TODO: hook up Google OAuth
-    say("Google sign-in is not connected yet.", true);
+    window.location.href = "/api/auth/google";
   });
 });

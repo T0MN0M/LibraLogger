@@ -7,6 +7,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const auth = require("./backend/auth");
+const google = require("./backend/google");
 const data = require("./backend/data");
 const sessions = require("./backend/sessions");
 const { getPool, ensureSchema } = require("./backend/db");
@@ -77,11 +78,14 @@ function readJSONBody(req) {
 
 // [method, path, handler, options]. ":id" in a path becomes ctx.params.id.
 // Routes need a logged-in user unless options.public is true; handlers get
-// ctx.user_ID from the session cookie. A handler returning null sends 204.
+// ctx.user_ID from the session cookie. A handler returning null sends 204;
+// one that calls ctx.redirect(url) sends a 302 to that URL.
 const API_ROUTES = [
   ["POST", "/api/auth/register", auth.register, { public: true, status: 201 }],
   ["POST", "/api/auth/login", auth.login, { public: true }],
   ["POST", "/api/auth/logout", auth.logout, { public: true }],
+  ["GET", "/api/auth/google", google.start, { public: true }],
+  ["GET", "/api/auth/google/callback", google.callback, { public: true }],
   ["POST", "/api/auth/password", auth.changePassword],
   ["GET", "/api/profile", data.getProfile],
   ["PATCH", "/api/profile", data.updateProfile],
@@ -117,6 +121,7 @@ function matchRoute(method, urlPath) {
 
 async function handleAPI(req, res, url) {
   const cookies = [];
+  let location = null;
   try {
     const { route, params } = matchRoute(req.method, url.pathname);
 
@@ -141,9 +146,16 @@ async function handleAPI(req, res, url) {
       query: Object.fromEntries(url.searchParams),
       user_ID,
       setCookie: (c) => cookies.push(c),
+      redirect: (url) => {
+        location = url;
+      },
     };
     const result = await route.handler(ctx);
     if (cookies.length) res.setHeader("Set-Cookie", cookies);
+    if (location) {
+      res.writeHead(302, { Location: location });
+      return res.end();
+    }
     if (result === null || result === undefined) {
       res.writeHead(204);
       return res.end();

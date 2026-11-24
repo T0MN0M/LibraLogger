@@ -100,11 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ----- Google sign-up placeholder -----
+  // ----- Google sign-up: same flow as Google login; a new account is created on first use -----
   document.getElementById("googleSignUp").addEventListener("click", () => {
-    // TODO: hook up Google OAuth
-    message.classList.remove("success");
-    message.textContent = "Google sign-up is not connected yet.";
+    window.location.href = "/api/auth/google";
   });
 });
 

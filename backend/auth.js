@@ -7,6 +7,7 @@
 const { requirePool } = require("./db");
 const { hashPassword, verifyPassword } = require("./passwords");
 const sessions = require("./sessions");
+const { isPasswordless } = require("./google");
 const { HttpError } = require("./errors");
 const { bad, str, isISODate, checkPassword } = require("./validate");
 
@@ -111,6 +112,8 @@ async function changePassword({ req, body, user_ID }) {
 
   const pool = requirePool();
   const [rows] = await pool.execute("SELECT hash_password FROM users WHERE user_ID = ?", [user_ID]);
+  if (rows.length && isPasswordless(rows[0].hash_password))
+    throw bad("This account signs in with Google, so it doesn't have a password to change.");
   // 400 (not 401) so the page doesn't treat it as "logged out".
   if (!rows.length || !(await verifyPassword(current, rows[0].hash_password)))
     throw bad("Your current password is incorrect.");
