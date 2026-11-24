@@ -19,6 +19,15 @@ const PORT = process.env.PORT || 3000; // Railway sets PORT automatically
 const ROOT = __dirname;
 const HOME_PAGE = "/Application/Registration_Page/registration.html"; // where "/" redirects
 
+// Cache busting: every local .js/.css link in an HTML page gets ?v=<this deploy>, so a
+// browser can never pair a new page or API with an old cached script (that once broke
+// 2FA login: a stale login.js ignored the "enter your code" step). Changes each deploy.
+const ASSET_VERSION = String(
+  process.env.RAILWAY_DEPLOYMENT_ID || process.env.RAILWAY_GIT_COMMIT_SHA || Date.now().toString(36)
+).slice(0, 12);
+const ASSET_REF = /(<(?:script|link)\b[^>]*?\s(?:src|href)=")(?!https?:|\/\/|data:)([^"?#]+\.(?:js|css))(?:\?[^"#]*)?"/gi;
+const versionAssets = (html) => html.replace(ASSET_REF, `$1$2?v=${ASSET_VERSION}"`);
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -216,6 +225,7 @@ const server = http.createServer((req, res) => {
     }
     fs.readFile(filePath, (readErr, data) => {
       if (readErr) return send(res, 404, "Not Found");
+      if (path.extname(filePath).toLowerCase() === ".html") data = Buffer.from(versionAssets(data.toString("utf8")));
       res.writeHead(200, {
         "Content-Type": MIME[path.extname(filePath).toLowerCase()] || "application/octet-stream",
         "Content-Length": data.length,
