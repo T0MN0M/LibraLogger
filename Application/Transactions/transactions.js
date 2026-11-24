@@ -17,7 +17,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   f.date.value = toISODate(new Date());
 
   categories = await api.getCategories();
-  for (const c of categories) {
+  // Keep the server's order, but always list "Other" last (below Technology).
+  const isOther = (c) => c.name === "Other";
+  const menuOrder = [...categories.filter((c) => !isOther(c)), ...categories.filter(isOther)];
+  for (const c of menuOrder) {
     $("addCategory").add(new Option(c.name, c.category_ID));
     filterCategory.add(new Option(c.name, c.category_ID));
   }

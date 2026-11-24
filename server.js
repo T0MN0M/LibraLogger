@@ -219,6 +219,8 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, {
         "Content-Type": MIME[path.extname(filePath).toLowerCase()] || "application/octet-stream",
         "Content-Length": data.length,
+        // Always revalidate so browsers never mix a new HTML page with stale CSS/JS.
+        "Cache-Control": "no-cache",
       });
       res.end(req.method === "HEAD" ? undefined : data);
     });

@@ -188,6 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         cx: p.cx,
         cy: p.cy,
         r: 4.5,
+        style: `--cat-color:${categoryColor(p.r.category_ID)}`,
         tabindex: 0,
         "aria-label": `${p.r.name}, ${formatMoney(p.r.amount)}, ${formatDate(p.r.date)}`,
       });
@@ -215,7 +216,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const legend = document.createElement("div");
     legend.className = "chart-legend";
-    legend.innerHTML = '<span>One-time</span><span class="recurring">Recurring</span>';
+    // One legend entry per category shown, plus the recurring marker.
+    const shownCats = [...new Set(rows.map((r) => r.category_ID))].sort((a, b) => catName(a).localeCompare(catName(b)));
+    for (const id of shownCats) {
+      const item = document.createElement("span");
+      item.style.setProperty("--cat-color", categoryColor(id));
+      item.textContent = catName(id);
+      legend.append(item);
+    }
+    if (rows.some((r) => r.recurring)) {
+      const rec = document.createElement("span");
+      rec.className = "recurring";
+      rec.textContent = "Recurring";
+      legend.append(rec);
+    }
 
     $("lineChart").replaceChildren(svg, legend);
   }

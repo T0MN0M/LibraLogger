@@ -429,18 +429,20 @@
 /* ===== Click-to-edit budget limit ===== */
 .meter { cursor: pointer; }
 
-.budget-edit {
+.budget-figures .budget-edit {
+  -webkit-appearance: none;
+  appearance: none;
   padding: 0.05rem 0.4rem;
   font: inherit;
   color: inherit;
-  background: none;
+  background: transparent;
   border: 1px dashed transparent;
   border-radius: 6px;
   cursor: pointer;
 }
 
-.budget-edit:hover,
-.budget-edit:focus-visible {
+.budget-figures .budget-edit:hover,
+.budget-figures .budget-edit:focus-visible {
   color: var(--utd-mint);
   border-color: var(--utd-mint);
 }
@@ -451,7 +453,7 @@
   color: var(--muted);
 }
 
-.budget-input {
+.budget-figures .budget-input {
   width: 100%;
   max-width: 7rem;
   padding: 0.2rem 0.4rem;
