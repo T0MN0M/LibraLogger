@@ -1,8 +1,9 @@
 // Dashboard: the main landing page after login.
-// Reads data only (per Logical View note 5) — all writes happen on other pages.
+// Mostly read-only (per Logical View note 5); the one exception is the budget limit,
+// which can be changed by clicking it (or the meter).
 document.addEventListener("DOMContentLoaded", async () => {
   const api = window.LibraAPI;
-  const { formatMoney, formatDate } = api.util;
+  const { formatMoney, formatDate, categoryColor } = api.util;
   const $ = (id) => document.getElementById(id);
 
   // ----- Encouragement messages by % of budget REMAINING -----
@@ -39,6 +40,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     texts: ["You ran out of budget for this period, better luck next time...", "Game over. Try to spend less next period"],
   };
 
+  let currentStatus = null; // last budget status shown (for the click-to-edit limit)
+
   try {
     const [status, recent, categories, profile, streak] = await Promise.all([
       api.getBudgetStatus(),
@@ -47,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       api.getProfile(),
       api.getStreak(),
     ]);
+    currentStatus = status;
     renderBudget(status);
     renderRecent(recent, categories);
     renderProfile(profile, streak);
@@ -56,6 +60,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("recentList").innerHTML = '<li class="empty-state">Could not load data.</li>';
     $("budgetStatus").querySelector(".status-text").textContent = "Could not load budget.";
   }
+
+  // ----- Center: click the limit (or the meter) to change the budget -----
+  const limitBtn = $("budgetLimit");
+  const limitInput = $("budgetLimitInput");
+
+  function startBudgetEdit() {
+    if (!currentStatus) return;
+    limitInput.value = Number(currentStatus.limit_amount) > 0 ? currentStatus.limit_amount : "";
+    limitBtn.hidden = true;
+    limitInput.hidden = false;
+    limitInput.focus();
+    limitInput.select();
+  }
+
+  function endBudgetEdit() {
+    limitInput.hidden = true;
+    limitBtn.hidden = false;
+  }
+
+  async function saveBudgetEdit() {
+    if (limitInput.hidden) return;
+    const value = Math.round(Number(limitInput.value) * 100) / 100;
+    endBudgetEdit();
+    if (!(value > 0) || value === Number(currentStatus.limit_amount)) return;
+    try {
+      await api.setBudget({ limit_amount: value });
+      currentStatus = await api.getBudgetStatus();
+      renderBudget(currentStatus);
+    } catch (err) {
+      console.error(err);
+      alert(err.status ? err.message : "Couldn't save your budget. Please try again.");
+    }
+  }
+
+  limitBtn.addEventListener("click", startBudgetEdit);
+  $("budgetMeter").addEventListener("click", startBudgetEdit);
+  limitInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") saveBudgetEdit();
+    else if (e.key === "Escape") endBudgetEdit();
+  });
+  limitInput.addEventListener("blur", saveBudgetEdit);
 
   // ----- Center: budget meter (Dashboard.display_Budget_Status) -----
   function renderBudget(s) {
@@ -108,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       $("meterDesc").textContent = "No budget set yet";
       const el = $("budgetMessage");
       el.dataset.level = "";
-      el.textContent = "Set a budget on the Analytics page to start tracking your spending.";
+      el.textContent = "Click the limit above to set a budget and start tracking your spending.";
       return;
     }
 
@@ -160,6 +205,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         icon.className = "tx-icon";
         icon.setAttribute("aria-hidden", "true");
         icon.textContent = catName(tx.category_ID).charAt(0);
+        icon.style.setProperty("--cat-color", categoryColor(tx.category_ID));
 
         const info = document.createElement("div");
         info.style.minWidth = "0";

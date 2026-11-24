@@ -20,7 +20,8 @@ In remote mode every user has their own data:
   the session cookie and only touches that user's rows. Requests without a valid session get a 401,
   and `api.js` sends the browser to the login page.
 - **New accounts start empty.** Registration only creates the `users` and `profiles` rows, so a
-  new user has no purchases, no budget (the API returns `limit_amount: 0`) and a 0-week streak.
+  new user has no purchases, the default $100 monthly budget (the API returns `limit_amount: 100`
+  until they change it) and a 0-week streak.
   Categories and resources are shared by everyone.
 
 Server routes are listed in `server.js` (`API_ROUTES`), with their logic in `backend/`.

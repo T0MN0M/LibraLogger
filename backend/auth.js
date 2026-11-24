@@ -45,7 +45,8 @@ function validateRegistration(body) {
 /**
  * POST /api/auth/register
  * Creates the users row + matching profiles row in one transaction. Nothing else:
- * a new account starts with no purchases, no budget and no streak.
+ * a new account starts with no purchases and no streak, and gets the default $100
+ * monthly budget (see getBudget in data.js) until the user changes it.
  */
 async function register({ body }) {
   const data = validateRegistration(body);

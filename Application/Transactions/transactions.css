@@ -125,3 +125,44 @@
 }
 
 .span-all { grid-column: 1 / -1; }
+
+/* Category pill, colored per category (--cat-color is set in transactions.js) */
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--cat-color);
+  background: color-mix(in srgb, var(--cat-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat-color) 45%, transparent);
+  border-radius: 999px;
+}
+
+.cat-pill::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--cat-color);
+  border-radius: 50%;
+}
+
+/* Rows with a description show it in a tooltip on hover */
+.tx-table tr[data-description] { cursor: help; }
+
+.tx-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 280px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--card-solid);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}

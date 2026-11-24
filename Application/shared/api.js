@@ -171,13 +171,13 @@
 
   const DEFAULT_CATEGORIES = [
     { category_ID: 1, name: "Food & Dining", is_default: true },
-    { category_ID: 2, name: "Groceries", is_default: true },
     { category_ID: 3, name: "Transportation", is_default: true },
     { category_ID: 4, name: "Entertainment", is_default: true },
     { category_ID: 5, name: "School", is_default: true },
     { category_ID: 6, name: "Subscriptions", is_default: true },
     { category_ID: 7, name: "Housing", is_default: true },
     { category_ID: 8, name: "Other", is_default: true },
+    { category_ID: 9, name: "Technology", is_default: true },
   ];
 
   function seedData() {
@@ -219,19 +219,19 @@
       purchases: [
         p(1, "Chick-fil-A", 11.42, 0, 1),
         p(2, "DART Monthly Pass", 32.0, 1, 3, { recurring: true }),
-        p(3, "Tom Thumb", 54.87, 2, 2),
+        p(3, "Tom Thumb", 54.87, 2, 1),
         p(4, "Spotify Student", 5.99, 3, 6, { recurring: true }),
         p(5, "Calculus Textbook", 89.5, 4, 5, { description: "Used copy from the bookstore" }),
         p(6, "Movie Night", 15.0, 5, 4),
         p(7, "Shell Gas", 38.21, 6, 3),
         p(8, "Starbucks", 6.75, 7, 1),
-        p(9, "Walmart", 42.3, 9, 2),
+        p(9, "Walmart", 42.3, 9, 1),
         p(10, "Rent Share", 450.0, 10, 7, { recurring: true }),
         p(11, "Netflix", 7.99, 12, 6, { recurring: true }),
         p(12, "Lab Goggles", 12.0, 14, 5, { is_refunded: true }),
         p(13, "Taco Bell", 9.18, 16, 1),
         p(14, "Concert Tickets", 60.0, 20, 4),
-        p(15, "Kroger", 47.66, 24, 2),
+        p(15, "Kroger", 47.66, 24, 1),
       ],
       resources: [
         {
@@ -549,6 +549,19 @@
   // Helpers that work the same in both modes
   // ------------------------------------------------------------------
 
+  /** Color for each default category (by category_ID); custom categories use the fallback. */
+  const CATEGORY_COLORS = {
+    1: "#ff9f43", // Food & Dining
+    3: "#6c8cff", // Transportation
+    4: "#ff6b9d", // Entertainment
+    5: "#feca57", // School
+    6: "#b28dff", // Subscriptions
+    7: "#2ed47a", // Housing
+    8: "#9dbbb0", // Other
+    9: "#3ad6f0", // Technology
+  };
+  const categoryColor = (id) => CATEGORY_COLORS[id] ?? CATEGORY_COLORS[8];
+
   /** Purchase.export_Transactions(): returns CSV text for the given rows. */
   function transactionsToCSV(rows, categories) {
     const catName = (id) => categories.find((c) => c.category_ID === id)?.name ?? "";
@@ -572,6 +585,6 @@
     endpoints: ENDPOINTS,
     ...(LIBRA_CONFIG.mode === "remote" ? remote : mock),
     ...Object.fromEntries(LIBRA_CONFIG.remoteEndpoints.map((name) => [name, remote[name]])),
-    util: { toISODate, parseISODate, periodRange, computeBudgetStatus, transactionsToCSV, formatMoney, formatDate },
+    util: { toISODate, parseISODate, periodRange, computeBudgetStatus, transactionsToCSV, formatMoney, formatDate, categoryColor },
   };
 })();

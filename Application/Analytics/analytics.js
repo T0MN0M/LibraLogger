@@ -1,7 +1,7 @@
 // Analytics page: Graphs (Dashboard.render_Graph / apply_Filter) + Goals (Budget.set_Budget).
 document.addEventListener("DOMContentLoaded", async () => {
   const api = window.LibraAPI;
-  const { formatMoney, formatDate, toISODate, parseISODate, periodRange } = api.util;
+  const { formatMoney, formatDate, toISODate, parseISODate, periodRange, categoryColor } = api.util;
   const $ = (id) => document.getElementById(id);
   const SVG_NS = "http://www.w3.org/2000/svg";
   const tooltip = $("tooltip");
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const goalForm = $("goalForm");
   const g = goalForm.elements;
   g.period.value = budget.period;
-  g.limit_amount.value = budget.limit_amount > 0 ? budget.limit_amount : ""; // empty for new accounts
+  g.limit_amount.value = budget.limit_amount > 0 ? budget.limit_amount : "";
   g.alert_threshold.value = budget.alert_threshold;
   $("goalStreak").textContent = streak?.weeks_under_budget ?? 0;
 
@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("lineChart").replaceChildren(svg);
   }
 
-  // ----- Ranked horizontal bars (one hue, largest first) -----
+  // ----- Ranked horizontal bars (colored by category, largest first) -----
   function renderBars(ranked, total, catName) {
     const list = $("categoryBars");
     if (!ranked.length) {
@@ -344,7 +344,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const share = total ? Math.round((amount / total) * 100) : 0;
         li.innerHTML = `
           <span class="bar-name"></span>
-          <span class="bar-track"><span class="bar-fill" style="display:block;width:${(amount / max) * 100}%"></span></span>
+          <span class="bar-track"><span class="bar-fill" style="display:block;width:${(amount / max) * 100}%;background:${categoryColor(id)}"></span></span>
           <span class="bar-value">${formatMoney(amount)}</span>`;
         li.querySelector(".bar-name").textContent = catName(id);
 

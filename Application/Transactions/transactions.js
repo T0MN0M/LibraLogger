@@ -1,7 +1,7 @@
 // Transactions page: add / refund / remove / export purchases, receipt upload sketch.
 document.addEventListener("DOMContentLoaded", async () => {
   const api = window.LibraAPI;
-  const { formatMoney, formatDate, toISODate, transactionsToCSV } = api.util;
+  const { formatMoney, formatDate, toISODate, transactionsToCSV, categoryColor } = api.util;
   const $ = (id) => document.getElementById(id);
 
   const form = $("addForm");
@@ -68,6 +68,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     await refresh();
   });
 
+  // ----- Hover a row to see its description -----
+  const tooltip = document.createElement("div");
+  tooltip.className = "tx-tooltip";
+  tooltip.setAttribute("role", "tooltip");
+  tooltip.hidden = true;
+  document.body.append(tooltip);
+
+  body.addEventListener("pointermove", (e) => {
+    const tr = e.target.closest("tr[data-description]");
+    if (!tr || e.target.closest(".row-actions")) {
+      tooltip.hidden = true;
+      return;
+    }
+    tooltip.textContent = tr.dataset.description;
+    tooltip.hidden = false;
+    // Keep the tooltip on screen near the cursor.
+    const pad = 14;
+    const { width, height } = tooltip.getBoundingClientRect();
+    const x = Math.min(e.clientX + pad, window.innerWidth - width - 8);
+    const y = e.clientY + pad + height > window.innerHeight ? e.clientY - height - pad : e.clientY + pad;
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  });
+  body.addEventListener("pointerleave", () => (tooltip.hidden = true));
+
   // ----- Export (Purchase.export_Transactions) -----
   $("exportBtn").addEventListener("click", () => {
     const csv = transactionsToCSV(filtered(), categories);
@@ -131,12 +156,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const name = document.createElement("td");
           name.textContent = r.name;
-          if (r.description) name.title = r.description;
+          if (r.description) tr.dataset.description = r.description;
           if (r.recurring) name.insertAdjacentHTML("beforeend", '<span class="tag">recurring</span>');
           if (r.is_refunded) name.insertAdjacentHTML("beforeend", '<span class="tag">refunded</span>');
 
           const cat = document.createElement("td");
-          cat.textContent = catName(r.category_ID);
+          const pill = document.createElement("span");
+          pill.className = "cat-pill";
+          pill.style.setProperty("--cat-color", categoryColor(r.category_ID));
+          pill.textContent = catName(r.category_ID);
+          cat.append(pill);
 
           const amt = document.createElement("td");
           amt.className = "num";

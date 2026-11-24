@@ -53,7 +53,7 @@
             <a class="card-link" href="../Analytics/analytics.html#goals">Edit goal &rarr;</a>
           </h2>
 
-          <div class="meter" id="budgetMeter">
+          <div class="meter" id="budgetMeter" title="Click to change your budget">
             <svg viewBox="0 0 240 150" role="img" aria-labelledby="meterDesc">
               <title id="meterDesc">Budget used</title>
               <!-- Color scale along the arc: green (0% spent) -> yellow (25%) -> orange (50%) -> red (75%+).
@@ -97,7 +97,10 @@
             </div>
             <div>
               <dt>Limit</dt>
-              <dd id="budgetLimit">&ndash;</dd>
+              <dd>
+                <button type="button" class="budget-edit" id="budgetLimit" title="Click to change your budget" aria-label="Change budget limit">&ndash;</button>
+                <input type="number" class="input budget-input" id="budgetLimitInput" min="1" step="0.01" aria-label="New budget limit in dollars" hidden />
+              </dd>
             </div>
             <div>
               <dt>Left</dt>

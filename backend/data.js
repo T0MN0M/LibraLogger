@@ -101,7 +101,10 @@ async function updateProfile(ctx) {
 
 // ------------------------------------------------------------------ Budget
 
-/** The user's overall budget, or an unsaved placeholder (limit 0) if they haven't set one. */
+/** Every user starts with this monthly budget until they change it. */
+const DEFAULT_BUDGET_LIMIT = 100;
+
+/** The user's overall budget, or the unsaved $100 default if they haven't set one. */
 async function getBudget({ user_ID }) {
   const [rows] = await requirePool().execute(
     `SELECT budget_ID, user_ID, period, limit_amount, alert_threshold, category_ID
@@ -109,7 +112,7 @@ async function getBudget({ user_ID }) {
     [user_ID]
   );
   const b = rows[0];
-  if (!b) return { budget_ID: null, user_ID, period: "MONTHLY", limit_amount: 0, alert_threshold: 80, category_ID: null };
+  if (!b) return { budget_ID: null, user_ID, period: "MONTHLY", limit_amount: DEFAULT_BUDGET_LIMIT, alert_threshold: 80, category_ID: null };
   return { ...b, limit_amount: Number(b.limit_amount), alert_threshold: Number(b.alert_threshold) };
 }
 

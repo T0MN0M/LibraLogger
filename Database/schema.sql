@@ -171,14 +171,19 @@ CREATE TABLE IF NOT EXISTS resources (
 
 INSERT INTO categories (category_ID, user_ID, name, is_default) VALUES
   (1, NULL, 'Food & Dining', TRUE),
-  (2, NULL, 'Groceries', TRUE),
   (3, NULL, 'Transportation', TRUE),
   (4, NULL, 'Entertainment', TRUE),
   (5, NULL, 'School', TRUE),
   (6, NULL, 'Subscriptions', TRUE),
   (7, NULL, 'Housing', TRUE),
-  (8, NULL, 'Other', TRUE)
+  (8, NULL, 'Other', TRUE),
+  (9, NULL, 'Technology', TRUE)
 ON DUPLICATE KEY UPDATE name = VALUES(name);
+
+-- The old "Groceries" default category (ID 2) was removed. Move any purchases that
+-- used it into "Food & Dining", then drop it. Both statements are safe to re-run.
+UPDATE purchases SET category_ID = 1 WHERE category_ID = 2;
+DELETE FROM categories WHERE category_ID = 2 AND user_ID IS NULL;
 
 -- Shared student resources (same for every user). INSERT IGNORE keeps any edits
 -- made directly in the database.
